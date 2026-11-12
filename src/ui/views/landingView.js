@@ -3,6 +3,8 @@ import { detectUniFromEmail } from '../../domain/auth.js';
 export function setupLandingView({ onSwitchMode, onEnterApp, onForgotPassword, onSaveNewPassword }) {
     const loginTabBtn = document.getElementById('tab-login-btn');
     const regTabBtn = document.getElementById('tab-register-btn');
+    const loginChevron = document.getElementById('login-chevron');
+    const regChevron = document.getElementById('register-chevron');
     const loginBox = document.getElementById('auth-login-box');
     const regBox = document.getElementById('auth-register-box');
     const confirmBox = document.getElementById('email-confirmation-box');
@@ -38,22 +40,30 @@ export function setupLandingView({ onSwitchMode, onEnterApp, onForgotPassword, o
     }
 
     function applyAuthModeUI(mode) {
-        const activeCls = 'px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider border-2 border-sup-green bg-sup-green text-sup-cream transition-colors';
-        const idleCls = 'px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider border-2 border-sup-green bg-white text-sup-green hover:bg-sup-creamDark transition-colors';
-
         confirmBox?.classList.add('hidden');
         recoveryBox?.classList.add('hidden');
 
         if (mode === 'login') {
-            if (loginTabBtn) loginTabBtn.className = activeCls;
-            if (regTabBtn) regTabBtn.className = idleCls;
             loginBox?.classList.remove('hidden');
             regBox?.classList.add('hidden');
-        } else {
-            if (regTabBtn) regTabBtn.className = activeCls;
-            if (loginTabBtn) loginTabBtn.className = idleCls;
+            if (loginChevron) loginChevron.textContent = '▲';
+            if (regChevron) regChevron.textContent = '▼';
+            loginTabBtn?.classList.add('bg-sup-creamDark');
+            regTabBtn?.classList.remove('bg-sup-creamDark');
+        } else if (mode === 'register') {
             regBox?.classList.remove('hidden');
             loginBox?.classList.add('hidden');
+            if (regChevron) regChevron.textContent = '▲';
+            if (loginChevron) loginChevron.textContent = '▼';
+            regTabBtn?.classList.add('bg-sup-creamDark');
+            loginTabBtn?.classList.remove('bg-sup-creamDark');
+        } else {
+            loginBox?.classList.add('hidden');
+            regBox?.classList.add('hidden');
+            if (loginChevron) loginChevron.textContent = '▼';
+            if (regChevron) regChevron.textContent = '▼';
+            loginTabBtn?.classList.remove('bg-sup-creamDark');
+            regTabBtn?.classList.remove('bg-sup-creamDark');
         }
     }
 
@@ -61,6 +71,8 @@ export function setupLandingView({ onSwitchMode, onEnterApp, onForgotPassword, o
         if (confirmTargetEmail) confirmTargetEmail.textContent = email;
         loginBox?.classList.add('hidden');
         regBox?.classList.add('hidden');
+        if (loginChevron) loginChevron.textContent = '▼';
+        if (regChevron) regChevron.textContent = '▼';
         recoveryBox?.classList.add('hidden');
         confirmBox?.classList.remove('hidden');
     }
@@ -72,29 +84,64 @@ export function setupLandingView({ onSwitchMode, onEnterApp, onForgotPassword, o
     function showPasswordRecoveryStep() {
         loginBox?.classList.add('hidden');
         regBox?.classList.add('hidden');
+        if (loginChevron) loginChevron.textContent = '▼';
+        if (regChevron) regChevron.textContent = '▼';
         confirmBox?.classList.add('hidden');
         if (newPasswordInput) newPasswordInput.value = '';
         recoveryBox?.classList.remove('hidden');
         newPasswordInput?.focus();
     }
 
-    function switchTo(mode) {
+    function toggleMode(targetMode) {
         hideEmailConfirmationStep();
-        applyAuthModeUI(mode);
-        onSwitchMode(mode);
+        const isLoginOpen = loginBox && !loginBox.classList.contains('hidden');
+        const isRegOpen = regBox && !regBox.classList.contains('hidden');
+
+        if (targetMode === 'login') {
+            if (isLoginOpen) {
+                applyAuthModeUI(null);
+            } else {
+                applyAuthModeUI('login');
+                onSwitchMode?.('login');
+                loginEmailInput?.focus();
+            }
+        } else if (targetMode === 'register') {
+            if (isRegOpen) {
+                applyAuthModeUI(null);
+            } else {
+                applyAuthModeUI('register');
+                onSwitchMode?.('register');
+                regNameInput?.focus();
+            }
+        }
     }
 
-    loginTabBtn?.addEventListener('click', () => switchTo('login'));
-    regTabBtn?.addEventListener('click', () => switchTo('register'));
-    switchToRegisterBtn?.addEventListener('click', () => switchTo('register'));
-    changeEmailBtn?.addEventListener('click', () => switchTo('register'));
-    backToLoginBtn?.addEventListener('click', () => switchTo('login'));
+    loginTabBtn?.addEventListener('click', () => toggleMode('login'));
+    regTabBtn?.addEventListener('click', () => toggleMode('register'));
+    switchToRegisterBtn?.addEventListener('click', () => {
+        hideEmailConfirmationStep();
+        applyAuthModeUI('register');
+        onSwitchMode?.('register');
+        regNameInput?.focus();
+    });
+    changeEmailBtn?.addEventListener('click', () => {
+        hideEmailConfirmationStep();
+        applyAuthModeUI('register');
+        onSwitchMode?.('register');
+        regEmailInput?.focus();
+    });
+    backToLoginBtn?.addEventListener('click', () => {
+        hideEmailConfirmationStep();
+        applyAuthModeUI('login');
+        onSwitchMode?.('login');
+        loginEmailInput?.focus();
+    });
 
     function submitAuthForm(mode) {
         if (mode === 'login') {
-            onSwitchMode('login');
+            onSwitchMode?.('login');
         } else {
-            onSwitchMode('register');
+            onSwitchMode?.('register');
         }
         onEnterApp({
             loginEmail: loginEmailInput?.value || '',
@@ -129,10 +176,93 @@ export function setupLandingView({ onSwitchMode, onEnterApp, onForgotPassword, o
     loginEmailInput?.addEventListener('input', () => renderDomainFeedback(loginEmailInput, 'login-domain-feedback'));
     regEmailInput?.addEventListener('input', () => renderDomainFeedback(regEmailInput, 'reg-domain-feedback'));
 
+    // Configurar Banner dinámico con animación derecha a izquierda y 3s de pausa
+    setupPhraseBannerTicker();
+
     return {
         applyAuthModeUI,
         showEmailConfirmationStep,
         hideEmailConfirmationStep,
         showPasswordRecoveryStep
     };
+}
+
+function setupPhraseBannerTicker() {
+    const slideContainer = document.getElementById('phrase-slide-container');
+    const bannerDotsContainer = document.getElementById('banner-dots');
+    if (!slideContainer) return;
+
+    const BANNER_PHRASES = [
+        {
+            dotClass: 'bg-sup-orange',
+            html: '<span class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-sup-green shrink-0"></span><span>🎓 Estudiantes Verificados (UTP, UNSA, UCSM, SENATI, TECSUP, USMP)</span>'
+        },
+        {
+            dotClass: 'bg-sup-yellow',
+            html: '<span class="w-2.5 h-2.5 rounded-full bg-sup-yellow border border-sup-green shrink-0"></span><span>📍 Radio Privado 1000m + Filtro Solo Mujeres ♀</span>'
+        },
+        {
+            dotClass: 'bg-[#1E7A50]',
+            html: '<span class="w-2.5 h-2.5 rounded-full bg-[#1E7A50] border border-sup-green shrink-0"></span><span>🚕 Uber / InDrive • Divide la tarifa sin comisiones</span>'
+        }
+    ];
+
+    let currentIndex = 0;
+
+    function updateDots(activeIdx) {
+        if (!bannerDotsContainer) return;
+        const dots = bannerDotsContainer.querySelectorAll('span');
+        dots.forEach((dot, idx) => {
+            if (idx === activeIdx) {
+                dot.className = `h-2 rounded-full border border-sup-green transition-all duration-300 w-4 ${BANNER_PHRASES[idx].dotClass}`;
+            } else {
+                dot.className = 'w-2 h-2 rounded-full border border-sup-green bg-sup-creamDark transition-all duration-300';
+            }
+        });
+    }
+
+    function renderActivePhrase(idx) {
+        slideContainer.innerHTML = `<span class="flex items-center justify-center gap-2 text-[11px] sm:text-xs font-bold text-sup-green leading-snug">${BANNER_PHRASES[idx].html}</span>`;
+        updateDots(idx);
+    }
+
+    renderActivePhrase(0);
+
+    function scheduleNextSlide() {
+        setTimeout(() => {
+            if (!document.getElementById('phrase-slide-container')) return;
+
+            // 1. Salida hacia la izquierda
+            slideContainer.style.transition = 'transform 450ms cubic-bezier(0.4, 0, 0.2, 1), opacity 450ms ease-in';
+            slideContainer.style.transform = 'translateX(-50px)';
+            slideContainer.style.opacity = '0';
+
+            setTimeout(() => {
+                if (!document.getElementById('phrase-slide-container')) return;
+
+                // 2. Cambiar a la siguiente frase y colocar a la derecha sin transición
+                currentIndex = (currentIndex + 1) % BANNER_PHRASES.length;
+                renderActivePhrase(currentIndex);
+
+                slideContainer.style.transition = 'none';
+                slideContainer.style.transform = 'translateX(50px)';
+                slideContainer.style.opacity = '0';
+
+                // 3. Forzar reflow y deslizar suavemente desde la derecha hacia el centro
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        if (!document.getElementById('phrase-slide-container')) return;
+                        slideContainer.style.transition = 'transform 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 450ms ease-out';
+                        slideContainer.style.transform = 'translateX(0)';
+                        slideContainer.style.opacity = '1';
+
+                        // 4. Pausar 3 segundos para lectura y pasar a la siguiente frase
+                        scheduleNextSlide();
+                    }, 40);
+                });
+            }, 450);
+        }, 3000);
+    }
+
+    scheduleNextSlide();
 }

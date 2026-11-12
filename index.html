@@ -126,18 +126,11 @@
         <!-- PANTALLA 0: LANDING PAGE CENTRAL                                      -->
         <!-- ===================================================================== -->
         <section id="screen-0"
-            class="landing-shell px-4 py-3.5 sm:px-8 sm:py-5 flex flex-col items-center text-center animate-pop">
-            <div
-                class="inline-flex items-center gap-1.5 bg-white border-2 border-sup-green shadow-hard-sm px-3 py-0.5 rounded-full mb-1.5 sm:mb-2">
-                <span class="w-2 h-2 rounded-full bg-sup-orange animate-pulse"></span>
-                <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-sup-green">
-                    RADAR EN VIVO • CORREDORES DE AREQUIPA
-                </span>
-            </div>
+            class="landing-shell px-4 py-4 sm:px-8 sm:py-6 flex flex-col items-center text-center animate-pop">
 
-            <div class="my-0.5 relative group select-none">
+            <div class="my-2 sm:my-3 relative group select-none flex justify-center">
                 <svg viewBox="0 0 220 112"
-                    class="w-28 sm:w-40 h-auto drop-shadow-[3px_3px_0px_#063120] sm:drop-shadow-[4px_4px_0px_#063120] transform -rotate-2 group-hover:rotate-0 transition-transform duration-200"
+                    class="w-56 sm:w-72 md:w-80 max-w-[92vw] h-auto drop-shadow-[5px_5px_0px_#063120] sm:drop-shadow-[7px_7px_0px_#063120] transform -rotate-1 group-hover:rotate-0 transition-transform duration-200"
                     aria-label="Logo Vámonos Club Arequipa">
                     <rect x="8" y="10" width="204" height="90" rx="18" fill="#FFFFFF" stroke="#063120"
                         stroke-width="4" />
@@ -163,118 +156,131 @@
                 </svg>
             </div>
 
-            <h1 class="font-display text-2xl sm:text-4xl text-sup-green leading-[1.04] tracking-tight mt-1 max-w-xl">
-                Comparte taxi seguro en <span class="text-sup-orange">Arequipa.</span>
-            </h1>
+            <div class="max-w-xl mx-auto my-1 text-center">
+                <h1 class="font-display text-2xl sm:text-4xl md:text-[2.5rem] text-sup-green leading-[1.08] tracking-tight text-center">
+                    Comparte taxi seguro en <span class="text-sup-orange">Arequipa.</span>
+                </h1>
 
-            <p class="text-[11px] sm:text-xs font-medium text-sup-green/85 max-w-lg mt-1 leading-snug">
-                Conecta con universitarios y vecinos verificados (<strong>UTP, UNSA, UCSM, SENATI, TECSUP,
-                    USMP</strong>), coordinen en el chat y dividan un <strong>Uber o InDrive</strong>.
-            </p>
+                <p class="text-[11px] sm:text-xs font-medium text-sup-green/85 max-w-md mx-auto mt-1 sm:mt-1.5 leading-snug text-center">
+                    Conecta con universitarios y vecinos verificados (<strong>UTP, UNSA, UCSM, SENATI, TECSUP,
+                        USMP</strong>), coordinen en el chat y dividan un <strong>Uber o InDrive</strong>.
+                </p>
+            </div>
 
-            <div class="w-full max-w-md mt-2.5 sm:mt-3 space-y-2">
-                <div class="grid grid-cols-2 gap-2">
+            <div class="w-full max-w-md mt-2.5 sm:mt-3.5 space-y-2.5">
+                <!-- ACORDEÓN ITEM 1: LOGIN -->
+                <div class="w-full border-2 border-sup-green rounded-2xl bg-white shadow-hard-sm overflow-hidden transition-all text-left">
                     <button type="button" id="tab-login-btn"
-                        class="px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider border-2 border-sup-green bg-sup-green text-sup-cream transition-colors">
-                        1. Login
+                        class="w-full bg-white hover:bg-sup-creamDark text-sup-green font-display text-xs sm:text-sm uppercase tracking-wide py-2.5 sm:py-3 px-4 flex items-center justify-between transition-colors">
+                        <span class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-sup-green shrink-0"></span>
+                            <span>1. Iniciar Sesión (Login)</span>
+                        </span>
+                        <span id="login-chevron" class="text-[11px] font-bold transition-transform duration-200">▼</span>
                     </button>
-                    <button type="button" id="tab-register-btn"
-                        class="px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider border-2 border-sup-green bg-white text-sup-green hover:bg-sup-creamDark transition-colors">
-                        2. Registrarme 🎓
-                    </button>
+                    <!-- FORMULARIO LOGIN -->
+                    <form id="auth-login-box"
+                        class="hidden border-t-2 border-sup-green bg-sup-cream/30 p-3 sm:p-3.5 text-left space-y-2 animate-pop"
+                        novalidate>
+                        <div>
+                            <label for="login-email"
+                                class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CORREO
+                                REGISTRADO *</label>
+                            <input type="email" id="login-email" autocomplete="email"
+                                placeholder="tu.correo@utp.edu.pe o personal"
+                                class="w-full bg-white border-2 border-sup-green rounded-lg px-3 py-1.5 text-xs font-bold text-sup-green placeholder-sup-green/45 focus:outline-none focus:ring-2 focus:ring-sup-orange">
+                            <div id="login-domain-feedback" class="hidden mt-1"></div>
+                        </div>
+                        <div>
+                            <label for="login-password"
+                                class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CONTRASEÑA
+                                *</label>
+                            <input type="password" id="login-password" autocomplete="current-password"
+                                placeholder="Tu contraseña"
+                                class="w-full bg-white border-2 border-sup-green rounded-lg px-3 py-1.5 text-xs font-bold text-sup-green placeholder-sup-green/45 focus:outline-none focus:ring-2 focus:ring-sup-orange">
+                        </div>
+                        <button type="submit" id="login-submit-btn"
+                            class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs sm:text-sm uppercase tracking-wide py-2.5 px-4 rounded-full flex items-center justify-center gap-1.5">
+                            <span>Entrar al Mapa</span>
+                            <span>→</span>
+                        </button>
+                        <div class="flex items-center justify-between pt-0.5 text-[10px] font-bold">
+                            <button type="button" id="forgot-password-btn"
+                                class="text-sup-green/75 hover:text-sup-orange underline">¿Olvidaste tu contraseña?</button>
+                            <button type="button" id="switch-to-register-btn"
+                                class="text-sup-green hover:text-sup-orange underline">¿Nuevo? Crea tu cuenta →</button>
+                        </div>
+                    </form>
                 </div>
 
-                <!-- PESTAÑA 1: LOGIN (CORREO + CONTRASEÑA REGISTRADOS) -->
-                <form id="auth-login-box"
-                    class="bg-white border-2 border-sup-green shadow-hard-sm rounded-2xl p-3 sm:p-3.5 text-left space-y-2 animate-pop"
-                    novalidate>
-                    <div>
-                        <label for="login-email"
-                            class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CORREO
-                            REGISTRADO *</label>
-                        <input type="email" id="login-email" autocomplete="email"
-                            placeholder="tu.correo@utp.edu.pe o personal"
-                            class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-3 py-1.5 text-xs font-bold text-sup-green placeholder-sup-green/45 focus:outline-none focus:bg-white focus:ring-2 focus:ring-sup-orange">
-                        <div id="login-domain-feedback" class="hidden mt-1"></div>
-                    </div>
-                    <div>
-                        <label for="login-password"
-                            class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CONTRASEÑA
-                            *</label>
-                        <input type="password" id="login-password" autocomplete="current-password"
-                            placeholder="Tu contraseña"
-                            class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-3 py-1.5 text-xs font-bold text-sup-green placeholder-sup-green/45 focus:outline-none focus:bg-white focus:ring-2 focus:ring-sup-orange">
-                    </div>
-                    <button type="submit" id="login-submit-btn"
-                        class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs sm:text-sm uppercase tracking-wide py-2.5 px-4 rounded-full flex items-center justify-center gap-1.5">
-                        <span>Entrar al Mapa</span>
-                        <span>→</span>
+                <!-- ACORDEÓN ITEM 2: REGISTRO -->
+                <div class="w-full border-2 border-sup-green rounded-2xl bg-white shadow-hard-sm overflow-hidden transition-all text-left">
+                    <button type="button" id="tab-register-btn"
+                        class="w-full bg-white hover:bg-sup-creamDark text-sup-green font-display text-xs sm:text-sm uppercase tracking-wide py-2.5 sm:py-3 px-4 flex items-center justify-between transition-colors">
+                        <span class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sup-yellow border border-sup-green shrink-0"></span>
+                            <span>2. Registrarme 🎓</span>
+                        </span>
+                        <span id="register-chevron" class="text-[11px] font-bold transition-transform duration-200">▼</span>
                     </button>
-                    <div class="flex items-center justify-between pt-0.5 text-[10px] font-bold">
-                        <button type="button" id="forgot-password-btn"
-                            class="text-sup-green/75 hover:text-sup-orange underline">¿Olvidaste tu contraseña?</button>
-                        <button type="button" id="switch-to-register-btn"
-                            class="text-sup-green hover:text-sup-orange underline">¿Nuevo? Crea tu cuenta →</button>
-                    </div>
-                </form>
-
-                <!-- PESTAÑA 2: REGISTRO COMPLETO -->
-                <form id="auth-register-box"
-                    class="hidden bg-white border-2 border-sup-green shadow-hard-sm rounded-2xl p-3 sm:p-3.5 text-left space-y-2 animate-pop"
-                    novalidate>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div>
-                            <label for="reg-name"
-                                class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">NOMBRE
-                                CORTO *</label>
-                            <input type="text" id="reg-name" autocomplete="name" placeholder="Ej. Camila S."
-                                class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
+                    <!-- FORMULARIO REGISTRO -->
+                    <form id="auth-register-box"
+                        class="hidden border-t-2 border-sup-green bg-sup-cream/30 p-3 sm:p-3.5 text-left space-y-2 animate-pop"
+                        novalidate>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div>
+                                <label for="reg-name"
+                                    class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">NOMBRE
+                                    CORTO *</label>
+                                <input type="text" id="reg-name" autocomplete="name" placeholder="Ej. Camila S."
+                                    class="w-full bg-white border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none">
+                            </div>
+                            <div>
+                                <label for="reg-gender"
+                                    class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">GÉNERO
+                                    (SEGURIDAD) *</label>
+                                <select id="reg-gender"
+                                    class="w-full bg-white border-2 border-sup-green rounded-lg px-2 py-1.5 text-xs font-bold text-sup-green focus:outline-none">
+                                    <option value="" selected disabled>Elegir...</option>
+                                    <option value="F">Femenino</option>
+                                    <option value="M">Masculino</option>
+                                </select>
+                            </div>
                         </div>
                         <div>
-                            <label for="reg-gender"
-                                class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">GÉNERO
-                                (SEGURIDAD) *</label>
-                            <select id="reg-gender"
-                                class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
-                                <option value="" selected disabled>Elegir...</option>
-                                <option value="F">Femenino</option>
-                                <option value="M">Masculino</option>
-                            </select>
+                            <label for="reg-phone"
+                                class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">TELÉFONO /
+                                WHATSAPP (PRIVADO) *</label>
+                            <input type="tel" id="reg-phone" inputmode="numeric" maxlength="12" autocomplete="tel"
+                                placeholder="Ej. 987654321"
+                                class="w-full bg-white border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none">
+                            <p class="text-[9px] font-medium text-sup-green/70 mt-0.5">🔒 Solo respaldo de seguridad en tu
+                                cuenta; nunca se muestra a otros usuarios.</p>
                         </div>
-                    </div>
-                    <div>
-                        <label for="reg-phone"
-                            class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">TELÉFONO /
-                            WHATSAPP (PRIVADO) *</label>
-                        <input type="tel" id="reg-phone" inputmode="numeric" maxlength="12" autocomplete="tel"
-                            placeholder="Ej. 987654321"
-                            class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
-                        <p class="text-[9px] font-medium text-sup-green/70 mt-0.5">🔒 Solo respaldo de seguridad en tu
-                            cuenta; nunca se muestra a otros usuarios.</p>
-                    </div>
-                    <div>
-                        <label for="reg-email"
-                            class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CORREO
-                            INSTITUCIONAL O PERSONAL *</label>
-                        <input type="email" id="reg-email" autocomplete="email"
-                            placeholder="codigo@utp.edu.pe / @unsa.edu.pe / @senati.pe..."
-                            class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
-                        <div id="reg-domain-feedback" class="hidden mt-1"></div>
-                    </div>
-                    <div>
-                        <label for="reg-password"
-                            class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CREA TU
-                            CONTRASEÑA *</label>
-                        <input type="password" id="reg-password" minlength="6" autocomplete="new-password"
-                            placeholder="Mínimo 6 caracteres"
-                            class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
-                    </div>
-                    <button type="submit" id="register-submit-btn"
-                        class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs sm:text-sm uppercase tracking-wide py-2.5 px-4 rounded-full flex items-center justify-center gap-1.5">
-                        <span>Registrarme y Verificar Correo</span>
-                        <span>→</span>
-                    </button>
-                </form>
+                        <div>
+                            <label for="reg-email"
+                                class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CORREO
+                                INSTITUCIONAL O PERSONAL *</label>
+                            <input type="email" id="reg-email" autocomplete="email"
+                                placeholder="codigo@utp.edu.pe / @unsa.edu.pe / @senati.pe..."
+                                class="w-full bg-white border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none">
+                            <div id="reg-domain-feedback" class="hidden mt-1"></div>
+                        </div>
+                        <div>
+                            <label for="reg-password"
+                                class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CREA TU
+                                CONTRASEÑA *</label>
+                            <input type="password" id="reg-password" minlength="6" autocomplete="new-password"
+                                placeholder="Mínimo 6 caracteres"
+                                class="w-full bg-white border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none">
+                        </div>
+                        <button type="submit" id="register-submit-btn"
+                            class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs sm:text-sm uppercase tracking-wide py-2.5 px-4 rounded-full flex items-center justify-center gap-1.5">
+                            <span>Registrarme y Verificar Correo</span>
+                            <span>→</span>
+                        </button>
+                    </form>
+                </div>
 
                 <!-- PASO 2: CONFIRMACIÓN POR ENLACE AL CORREO -->
                 <div id="email-confirmation-box"
@@ -311,32 +317,23 @@
                 </form>
             </div>
 
-            <div class="w-full max-w-2xl border-t-2 border-sup-green/20 mt-3 pt-2.5">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <div
-                        class="bg-white border-2 border-sup-green shadow-hard-sm rounded-xl sm:rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 flex items-center gap-2 text-left">
-                        <span
-                            class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-sup-orange border-2 border-sup-green shrink-0"></span>
-                        <span class="text-[10px] sm:text-[11px] font-bold text-sup-green leading-tight">
-                            🎓 Estudiantes Verificados (UTP, UNSA, UCSM)
+            <!-- BANNER DINÁMICO DE FRASES EN MOVIMIENTO (DERECHA A IZQUIERDA CON PAUSA DE 3s) -->
+            <div class="w-full max-w-xl border-t-2 border-sup-green/20 mt-4 pt-3">
+                <div id="landing-phrase-banner"
+                    class="w-full bg-white border-2 border-sup-green shadow-hard-sm rounded-xl sm:rounded-2xl py-2.5 px-4 overflow-hidden relative min-h-[46px] flex items-center justify-center">
+                    <div id="phrase-slide-container"
+                        class="w-full flex items-center justify-center text-center transition-all duration-500 ease-in-out transform">
+                        <span class="flex items-center justify-center gap-2 text-[11px] sm:text-xs font-bold text-sup-green leading-snug">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-sup-green shrink-0"></span>
+                            <span>🎓 Estudiantes Verificados (UTP, UNSA, UCSM, SENATI, TECSUP, USMP)</span>
                         </span>
                     </div>
-                    <div
-                        class="bg-white border-2 border-sup-green shadow-hard-sm rounded-xl sm:rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 flex items-center gap-2 text-left">
-                        <span
-                            class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-sup-yellow border-2 border-sup-green shrink-0"></span>
-                        <span class="text-[10px] sm:text-[11px] font-bold text-sup-green leading-tight">
-                            📍 Radio Privado 1000m + Filtro Solo Mujeres
-                        </span>
-                    </div>
-                    <div
-                        class="bg-white border-2 border-sup-green shadow-hard-sm rounded-xl sm:rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 flex items-center gap-2 text-left">
-                        <span
-                            class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#1E7A50] border-2 border-sup-green shrink-0"></span>
-                        <span class="text-[10px] sm:text-[11px] font-bold text-sup-green leading-tight">
-                            🚕 Uber / InDrive • Divide la tarifa
-                        </span>
-                    </div>
+                </div>
+                <!-- Puntos indicadores de rotación -->
+                <div id="banner-dots" class="flex justify-center items-center gap-1.5 mt-2">
+                    <span class="w-2 h-2 rounded-full border border-sup-green bg-sup-orange transition-all duration-300"></span>
+                    <span class="w-2 h-2 rounded-full border border-sup-green bg-sup-creamDark transition-all duration-300"></span>
+                    <span class="w-2 h-2 rounded-full border border-sup-green bg-sup-creamDark transition-all duration-300"></span>
                 </div>
             </div>
         </section>
