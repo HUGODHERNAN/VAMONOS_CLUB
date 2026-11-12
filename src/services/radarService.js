@@ -31,6 +31,21 @@ function mapCloudMatchRow(row) {
     };
 }
 
+async function fetchMatchesForIntent(supabase, intentId, dismissedUserIds = []) {
+    const { data: matches, error: rpcError } = await supabase
+        .rpc('find_matching_rides', { p_intent_id: intentId });
+
+    if (rpcError) {
+        return { ok: false, error: rpcError.message.toUpperCase() };
+    }
+
+    const mapped = (matches || [])
+        .map(mapCloudMatchRow)
+        .filter((u) => !dismissedUserIds.includes(u.id));
+
+    return { ok: true, candidates: mapped };
+}
+
 export const radarService = {
     async publishAndSearch({
         userId,
@@ -96,18 +111,23 @@ export const radarService = {
             };
         }
 
-        const { data: matches, error: rpcError } = await supabase
-            .rpc('find_matching_rides', { p_intent_id: inserted.id });
-
-        if (rpcError) {
-            return { ok: false, error: rpcError.message.toUpperCase() };
+        const matchesRes = await fetchMatchesForIntent(supabase, inserted.id, dismissedUserIds);
+        if (!matchesRes.ok) {
+            return matchesRes;
         }
 
-        const mapped = (matches || [])
-            .map(mapCloudMatchRow)
-            .filter((u) => !dismissedUserIds.includes(u.id));
+        return { ok: true, mode: 'cloud', intentId: inserted.id, candidates: matchesRes.candidates };
+    },
 
-        return { ok: true, mode: 'cloud', intentId: inserted.id, candidates: mapped };
+    async refreshMatches({ intentId, dismissedUserIds = [] }) {
+        if (!intentId || !isSupabaseConfigured()) {
+            return { ok: false, candidates: [] };
+        }
+        const supabase = await getSupabaseClient();
+        if (!supabase) {
+            return { ok: false, candidates: [] };
+        }
+        return fetchMatchesForIntent(supabase, intentId, dismissedUserIds);
     },
 
     async cancelActiveIntent(intentId) {

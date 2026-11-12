@@ -28,9 +28,17 @@ let requestInterval = null;
 let requestAutoAcceptTimeout = null;
 let incomingCountdownInterval = null;
 let chatTimerInterval = null;
+let radarRefreshInterval = null;
 let typingTimeout = null;
 let unsubscribeMatchEvents = null;
 let unsubscribeTripRoom = null;
+
+function clearRadarRefreshTimer() {
+    if (radarRefreshInterval) {
+        clearInterval(radarRefreshInterval);
+        radarRefreshInterval = null;
+    }
+}
 
 function clearRequestTimers() {
     if (requestInterval) {
@@ -66,6 +74,9 @@ function clearChatTimers() {
 }
 
 function showScreen(screenNumber) {
+    if (screenNumber !== 2) {
+        clearRadarRefreshTimer();
+    }
     appStore.setState({ currentScreen: screenNumber });
     const landingEl = document.getElementById('screen-0');
     const appShellEl = document.getElementById('app-container');
@@ -187,6 +198,7 @@ async function bootstrap() {
             clearRequestTimers();
             clearIncomingTimer();
             clearChatTimers();
+            clearRadarRefreshTimer();
             if (unsubscribeMatchEvents) {
                 unsubscribeMatchEvents();
                 unsubscribeMatchEvents = null;
@@ -206,6 +218,7 @@ async function bootstrap() {
             clearRequestTimers();
             clearIncomingTimer();
             clearChatTimers();
+            clearRadarRefreshTimer();
             profileModal.close();
             showScreen(0);
         },
@@ -257,6 +270,35 @@ async function bootstrap() {
 
         radarView.render();
         showScreen(2);
+        startRadarAutoRefresh();
+    }
+
+    function startRadarAutoRefresh() {
+        clearRadarRefreshTimer();
+        if (!isCloudMode) return;
+
+        radarRefreshInterval = setInterval(async () => {
+            const st = appStore.getState();
+            if (st.currentScreen !== 2 || !st.activeIntentId || st.pendingPartner || st.incomingRequest) {
+                return;
+            }
+            const refreshed = await radarService.refreshMatches({
+                intentId: st.activeIntentId,
+                dismissedUserIds: st.dismissedUserIds
+            });
+            if (!refreshed.ok) return;
+
+            const prevSig = (st.candidates || []).map((c) => `${c.id}:${c.intentId}:${c.matchType}`).join('|');
+            const nextSig = refreshed.candidates.map((c) => `${c.id}:${c.intentId}:${c.matchType}`).join('|');
+            if (prevSig !== nextSig) {
+                const hadNone = (st.candidates || []).length === 0;
+                appStore.setState({ candidates: refreshed.candidates });
+                radarView.render();
+                if (hadNone && refreshed.candidates.length > 0) {
+                    showToast('🚕 ¡NUEVO COMPAÑERO DETECTADO EN TU RUTA!');
+                }
+            }
+        }, TIMERS.RADAR_AUTO_REFRESH_MS);
     }
 
     const mapView = setupMapView({

@@ -10,6 +10,7 @@ Esta carpeta contiene el esquema SQL listo para producción (PostgreSQL + PostGI
    2. `supabase/migrations/002_fase3_realtime_helpers.sql`
    3. `supabase/migrations/003_security_hardening.sql`
    4. `supabase/migrations/004_phone_password_auth.sql`
+   5. `supabase/migrations/005_symmetric_route_matching.sql`
 3. En **Authentication -> Sign In / Providers -> Email**:
    - Mantén activado **Enable Email provider** y **Confirm email**.
    - El sistema usa **Correo + Contraseña** y envía un enlace de confirmación por correo solo al crear cuenta (funciona sin SMTP externo).

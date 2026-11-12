@@ -21,7 +21,8 @@ export const TIMERS = Object.freeze({
     REQUEST_DEMO_AUTO_ACCEPT_MS: 3500,
     CHAT_TTL_SECONDS: 900, // 15 minutos
     NOSHOW_LOCK_REMAINING_THRESHOLD: 600, // Se habilita cuando quedan <= 600s (tras 5 min)
-    PRIVACY_RADIUS_METERS: 250,
+    PRIVACY_RADIUS_METERS: 1000,
+    RADAR_AUTO_REFRESH_MS: 8000,
     TOAST_DURATION_MS: 3400
 });
 
