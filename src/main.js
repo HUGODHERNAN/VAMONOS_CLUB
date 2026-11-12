@@ -16,6 +16,7 @@ import { setupIncomingRequestModal } from './ui/components/incomingRequestModal.
 import { setupProfileModal } from './ui/components/profileModal.js';
 import { setupRatingModal } from './ui/components/ratingModal.js';
 import { setupRequestModal } from './ui/components/requestModal.js';
+import { setupRoutePreviewModal } from './ui/components/routePreviewModal.js';
 import { showToast } from './ui/components/toast.js';
 import { setupTopbar, syncTopbar } from './ui/components/topbar.js';
 import { setupChatView } from './ui/views/chatView.js';
@@ -680,9 +681,78 @@ async function bootstrap() {
         }
     });
 
+    async function sendMatchRequestToUser(userId) {
+        const state = appStore.getState();
+        const partner = state.candidates.find((u) => u.id === userId);
+        if (!partner) return;
+
+        const reqRes = await matchService.sendMatchRequest({
+            requesterId: state.userId,
+            targetUser: partner,
+            requesterIntentId: state.activeIntentId
+        });
+
+        if (!reqRes.ok) {
+            showToast(reqRes.error);
+            return;
+        }
+
+        clearRequestTimers();
+        appStore.setState({
+            pendingPartner: partner,
+            activeRequestId: reqRes.requestId,
+            requestSecondsRemaining: TIMERS.REQUEST_TIMEOUT_SECONDS
+        });
+
+        const destData = state.destPlace || PLACES_AQP.destinations[state.destKey] || PLACES_AQP.destinations.cerro_colorado;
+        const destDistrict = destData.name.split(' (')[0];
+
+        requestModal.open({
+            partner,
+            userName: state.userName,
+            userUni: state.userUni,
+            destDistrict
+        });
+
+        requestInterval = setInterval(async () => {
+            const next = appStore.getState().requestSecondsRemaining - 1;
+            appStore.setState({ requestSecondsRemaining: next });
+            requestModal.updateCountdown(next);
+            if (next <= 0) {
+                const activeReqId = appStore.getState().activeRequestId;
+                clearRequestTimers();
+                if (isCloudMode && activeReqId) {
+                    await matchService.cancelMatchRequest(activeReqId);
+                }
+                appStore.setState({ pendingPartner: null, activeRequestId: null });
+                requestModal.close();
+                showToast('TIEMPO DE ESPERA AGOTADO (60S)');
+            }
+        }, 1000);
+
+        if (!isCloudMode) {
+            requestAutoAcceptTimeout = setTimeout(() => {
+                clearRequestTimers();
+                requestModal.close();
+                const currentPartner = appStore.getState().pendingPartner;
+                appStore.setState({ pendingPartner: null, activeRequestId: null });
+                if (currentPartner) {
+                    openCoordinationChat({ partner: currentPartner });
+                }
+            }, TIMERS.REQUEST_DEMO_AUTO_ACCEPT_MS);
+        }
+    }
+
+    const routePreviewModal = setupRoutePreviewModal({
+        onRequestRide(userId) {
+            sendMatchRequestToUser(userId);
+        }
+    });
+
     const radarView = setupRadarView({
         getState: () => appStore.getState(),
         onBackToMap() {
+            routePreviewModal.close();
             showScreen(1);
         },
         async onToggleWomenFilter() {
@@ -714,66 +784,24 @@ async function bootstrap() {
                 radarView.render();
             }
         },
-        async onAcceptUser(userId) {
+        onPreviewRoute(userId) {
             const state = appStore.getState();
             const partner = state.candidates.find((u) => u.id === userId);
             if (!partner) return;
 
-            const reqRes = await matchService.sendMatchRequest({
-                requesterId: state.userId,
-                targetUser: partner,
-                requesterIntentId: state.activeIntentId
-            });
-
-            if (!reqRes.ok) {
-                showToast(reqRes.error);
-                return;
-            }
-
-            clearRequestTimers();
-            appStore.setState({
-                pendingPartner: partner,
-                activeRequestId: reqRes.requestId,
-                requestSecondsRemaining: TIMERS.REQUEST_TIMEOUT_SECONDS
-            });
-
+            const originData = state.originPlace || PLACES_AQP.origins[state.originKey] || PLACES_AQP.origins.utp;
             const destData = state.destPlace || PLACES_AQP.destinations[state.destKey] || PLACES_AQP.destinations.cerro_colorado;
-            const destDistrict = destData.name.split(' (')[0];
+            const originCoords = state.customGpsCoords || originData.coords;
 
-            requestModal.open({
+            routePreviewModal.open({
                 partner,
-                userName: state.userName,
-                userUni: state.userUni,
-                destDistrict
+                originCoords,
+                destCoords: destData.coords,
+                myRouteCoords: state.activeRouteCoords
             });
-
-            requestInterval = setInterval(async () => {
-                const next = appStore.getState().requestSecondsRemaining - 1;
-                appStore.setState({ requestSecondsRemaining: next });
-                requestModal.updateCountdown(next);
-                if (next <= 0) {
-                    const activeReqId = appStore.getState().activeRequestId;
-                    clearRequestTimers();
-                    if (isCloudMode && activeReqId) {
-                        await matchService.cancelMatchRequest(activeReqId);
-                    }
-                    appStore.setState({ pendingPartner: null, activeRequestId: null });
-                    requestModal.close();
-                    showToast('TIEMPO DE ESPERA AGOTADO (60S)');
-                }
-            }, 1000);
-
-            if (!isCloudMode) {
-                requestAutoAcceptTimeout = setTimeout(() => {
-                    clearRequestTimers();
-                    requestModal.close();
-                    const currentPartner = appStore.getState().pendingPartner;
-                    appStore.setState({ pendingPartner: null, activeRequestId: null });
-                    if (currentPartner) {
-                        openCoordinationChat({ partner: currentPartner });
-                    }
-                }, TIMERS.REQUEST_DEMO_AUTO_ACCEPT_MS);
-            }
+        },
+        onAcceptUser(userId) {
+            sendMatchRequestToUser(userId);
         }
     });
 

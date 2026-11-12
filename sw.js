@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vamonos-club-v13';
+const CACHE_NAME = 'vamonos-club-v14';
 
 const APP_SHELL_ASSETS = [
     './',
@@ -37,6 +37,7 @@ const APP_SHELL_ASSETS = [
     './src/ui/components/profileModal.js',
     './src/ui/components/ratingModal.js',
     './src/ui/components/requestModal.js',
+    './src/ui/components/routePreviewModal.js',
     './src/ui/components/incomingRequestModal.js',
     './src/ui/views/landingView.js',
     './src/ui/views/mapView.js',

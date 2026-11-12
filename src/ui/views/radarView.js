@@ -3,7 +3,7 @@ import { canUseWomenOnlyFilter } from '../../domain/auth.js';
 import { filterMatchCandidates, parsePlaceLabel } from '../../domain/matching.js';
 import { escapeHtml } from '../utils/dom.js';
 
-export function setupRadarView({ getState, onBackToMap, onToggleWomenFilter, onDismissUser, onResetRadar, onAcceptUser }) {
+export function setupRadarView({ getState, onBackToMap, onToggleWomenFilter, onDismissUser, onResetRadar, onPreviewRoute, onAcceptUser }) {
     const backBtn = document.getElementById('radar-back-map-btn');
     const womenPill = document.getElementById('radar-women-pill');
     const container = document.getElementById('matches-container');
@@ -15,6 +15,12 @@ export function setupRadarView({ getState, onBackToMap, onToggleWomenFilter, onD
         const dismissBtn = event.target.closest('[data-action="dismiss-match"]');
         if (dismissBtn) {
             onDismissUser(dismissBtn.getAttribute('data-user-id'));
+            return;
+        }
+
+        const previewBtn = event.target.closest('[data-action="preview-route"]');
+        if (previewBtn) {
+            onPreviewRoute?.(previewBtn.getAttribute('data-user-id'));
             return;
         }
 
@@ -149,6 +155,9 @@ export function setupRadarView({ getState, onBackToMap, onToggleWomenFilter, onD
                                 ${escapeHtml(user.payment)}
                             </span>
                         </div>
+                        <button type="button" data-action="preview-route" data-user-id="${escapeHtml(user.id)}" class="btn-brutal-sm w-full bg-white hover:bg-sup-green hover:text-sup-cream text-sup-green text-[10px] font-bold uppercase py-1.5 rounded-[3px] flex items-center justify-center gap-1.5">
+                            🗺️ VER RUTA EN MAPA
+                        </button>
                     </div>
 
                     <p class="text-[11px] font-medium text-sup-green/85 leading-snug">

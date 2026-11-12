@@ -17,6 +17,7 @@ export function createInitialMockUsers() {
             sharedPercent: '100% MISMA RUTA',
             stopDistrict: 'YANAHUARA',
             stopStreet: 'Av. Ejército / Óvalo Quiñones',
+            destCoords: [-16.3876, -71.5418],
             bio: 'Salgo de pabellón B hacia Av. Aviación. Podemos pedir InDrive o Uber.',
             replies: [
                 '¡Hola! Dale, estoy saliendo por la puerta principal de Av. Parra 😊',
@@ -41,6 +42,7 @@ export function createInitialMockUsers() {
             sharedPercent: '65% EN TU RUTA (DE PASO)',
             stopDistrict: 'YANAHUARA',
             stopStreet: 'Av. Ejército / Óvalo Quiñones',
+            destCoords: [-16.3876, -71.5418],
             bio: 'Voy por toda la avenida principal y me bajo 10 cuadras antes de tu destino.',
             replies: [
                 'Qué tal bro, estoy a media cuadra en el grifo. ¿Nos vemos en la esquina?',
@@ -65,6 +67,7 @@ export function createInitialMockUsers() {
             sharedPercent: '100% MISMA RUTA',
             stopDistrict: 'CERCADO',
             stopStreet: 'Av. Venezuela / Puente Grau',
+            destCoords: [-16.3988, -71.5369],
             bio: 'Voy directo hacia la misma zona, prefiero dividir en efectivo o Plin.',
             replies: [
                 '¡Hola! Qué coincidencia, justo iba a pedir un Uber sola.',

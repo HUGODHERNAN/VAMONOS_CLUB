@@ -695,6 +695,62 @@
                 </div>
             </div>
 
+            <!-- MODAL 6: PREVISUALIZACIÓN DE RUTA COMPARTIDA EN MAPA -->
+            <div id="route-preview-modal"
+                class="hidden absolute inset-0 z-[1200] bg-sup-green/85 backdrop-blur-[2px] flex items-center justify-center p-3.5 sm:p-4">
+                <div
+                    class="bg-sup-cream border-[3px] border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop">
+                    <div class="px-4 py-2.5 bg-sup-green text-sup-cream flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-white shrink-0"></span>
+                            <span id="route-preview-title" class="font-display text-xs uppercase tracking-wider truncate">MAPA DEL RECORRIDO</span>
+                        </div>
+                        <button type="button" id="close-route-preview-btn"
+                            class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white text-sup-green w-7 h-7 rounded-md font-bold text-xs flex items-center justify-center shrink-0"
+                            aria-label="Cerrar mapa de ruta">✕</button>
+                    </div>
+                    <div class="checkerboard-strip"></div>
+
+                    <div class="p-3.5 space-y-2.5">
+                        <div class="bg-white border-2 border-sup-green rounded-md px-2.5 py-2 flex items-center justify-between gap-2">
+                            <p id="route-preview-subtitle" class="text-[10px] font-bold uppercase text-sup-green leading-snug truncate">
+                                TRAZANDO RECORRIDO...
+                            </p>
+                            <span id="route-preview-stats"
+                                class="bg-sup-green text-sup-cream text-[9px] font-bold uppercase px-2 py-0.5 rounded-[2px] shrink-0">
+                                🛣️ TRAZANDO...
+                            </span>
+                        </div>
+
+                        <div id="route-preview-map"
+                            class="w-full h-56 sm:h-60 rounded-lg border-2 border-sup-green shadow-hard-sm overflow-hidden bg-sup-creamDark retro-map-tiles">
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-between gap-2 bg-white border-2 border-sup-green rounded-md px-2.5 py-1.5 text-[10px] font-bold uppercase text-sup-green">
+                            <span class="inline-flex items-center gap-1.5">
+                                <span class="w-3 h-1.5 bg-sup-green rounded-full inline-block"></span>
+                                Tu ruta (A → B)
+                            </span>
+                            <span class="inline-flex items-center gap-1.5">
+                                <span class="w-3 h-1.5 bg-sup-orange rounded-full inline-block"></span>
+                                <span id="route-preview-partner-legend">Parada compañero</span>
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-0.5">
+                            <button type="button" id="close-route-preview-footer-btn"
+                                class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green font-bold text-[10px] uppercase py-2.5 rounded-md">
+                                CERRAR
+                            </button>
+                            <button type="button" id="preview-request-ride-btn"
+                                class="btn-brutal bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-[10px] uppercase py-2.5 rounded-md">
+                                🤝 SOLICITAR VIAJE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- PANTALLA 1: MAPA DE AREQUIPA Y BUSCADOR DE RUTA -->
             <section id="screen-1" class="hidden flex-col h-full w-full overflow-hidden">
                 <div class="relative p-3 bg-sup-cream border-b-2 border-sup-green space-y-2 shrink-0 z-20">

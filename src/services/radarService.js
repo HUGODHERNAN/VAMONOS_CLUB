@@ -26,6 +26,9 @@ function mapCloudMatchRow(row) {
         sharedPercent: isSame ? '100% MISMA RUTA' : `${row.shared_percent || 65}% EN TU RUTA (DE PASO)`,
         stopDistrict: district,
         stopStreet: street,
+        destCoords: (Number.isFinite(Number(row.dest_lat)) && Number.isFinite(Number(row.dest_lng)))
+            ? [Number(row.dest_lat), Number(row.dest_lng)]
+            : null,
         bio: `Sale ${row.departure_window.toLowerCase()} • Divide con ${row.payment_method}.`,
         replies: []
     };
