@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#063120">
+    <meta name="description"
+        content="Comparte taxi seguro en Arequipa con estudiantes y vecinos verificados. Sin comisiones.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Vámonos Club">
+    <title>VÁMONOS Club | Taxi Compartido en Arequipa</title>
+
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="./assets/icons/favicon.svg">
+    <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png">
+
+    <!-- Tailwind CSS + Configuración SUPClub -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./src/config/tailwind.config.js"></script>
+
+    <!-- Leaflet CSS & JS para Mapas Interactivos de Arequipa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Google Fonts: Archivo Black (Display), Pacifico (Retro Script), Space Grotesk (Clean UI) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Pacifico&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Estilos Modulares SUPClub -->
+    <link rel="stylesheet" href="./src/styles/main.css">
+</head>
+
+<body>
+
+    <div class="workspace-wrapper">
+
+        <!-- ===================================================================== -->
+        <!-- BARRA SUPERIOR ESTILO VENTANA (3 PUNTOS + TÍTULO VÁMONOS CLUB)         -->
+        <!-- ===================================================================== -->
+        <header id="global-topbar" class="window-topbar shrink-0">
+            <div class="topbar-inner px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <div class="window-dots flex items-center gap-1 sm:gap-1.5" aria-hidden="true">
+                        <span
+                            class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-sup-orange border-2 border-sup-green"></span>
+                        <span
+                            class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-sup-yellow border-2 border-sup-green"></span>
+                        <span
+                            class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-[#1E7A50] border-2 border-sup-green"></span>
+                    </div>
+                    <button type="button" id="topbar-brand-btn"
+                        class="flex items-baseline gap-1 text-left focus:outline-none group" title="Volver al inicio">
+                        <span
+                            class="brand-wordmark font-display text-lg sm:text-2xl tracking-tight text-sup-green uppercase group-hover:text-sup-orange transition-colors">Vámonos</span>
+                        <span
+                            class="brand-script font-script text-base sm:text-xl text-sup-orange -rotate-3 transform inline-block">Club</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-1.5 min-w-0">
+                    <button type="button" id="btn-install-pwa"
+                        class="hidden btn-brutal-sm bg-sup-yellow hover:bg-sup-orange hover:text-white text-sup-green px-2.5 py-1.5 rounded-full items-center gap-1 text-[10px] font-bold uppercase tracking-wider shrink-0">
+                        <i class="fa-solid fa-download text-[10px]"></i>
+                        <span>INSTALAR APP</span>
+                    </button>
+
+                    <div id="active-user-controls" class="hidden items-center justify-end min-w-0">
+                        <button type="button" id="topbar-profile-btn"
+                            class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-bold uppercase tracking-tight transition-colors group">
+                            <span id="header-avatar-initials"
+                                class="w-5 h-5 rounded-full bg-sup-green text-sup-cream group-hover:bg-white group-hover:text-sup-green text-[9px] font-display flex items-center justify-center shrink-0">
+                                HH
+                            </span>
+                            <span class="tracking-wider">PERFIL</span>
+                            <i class="fa-solid fa-chevron-down text-[9px] opacity-75"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="checkerboard-strip"></div>
+        </header>
+
+        <!-- NOTIFICACIÓN TOAST GLOBAL -->
+        <div id="toast-banner"
+            class="hidden fixed top-5 left-1/2 -translate-x-1/2 z-[1400] bg-sup-green text-sup-cream border-2 border-sup-orange shadow-hard-orange px-4 py-2.5 rounded-md flex items-center gap-2.5 text-xs font-bold uppercase tracking-wide max-w-[92vw]">
+            <i id="toast-icon" class="fa-solid fa-bolt text-sup-orange text-sm"></i>
+            <span id="toast-message">AVISO DEL SISTEMA</span>
+        </div>
+
+        <!-- MODAL DE INSTALACIÓN PWA MANUAL (iOS / NAVEGADORES SIN PROMPT) -->
+        <div id="pwa-install-modal"
+            class="hidden fixed inset-0 z-[1300] bg-sup-green/80 backdrop-blur-[2px] flex items-center justify-center p-4">
+            <div
+                class="bg-sup-cream border-[3px] border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop">
+                <div class="px-4 py-2.5 bg-sup-cream flex items-center justify-between">
+                    <span class="font-display text-xs uppercase text-sup-green">📲 INSTALAR VÁMONOS CLUB</span>
+                    <button type="button" data-action="close-pwa-modal"
+                        class="btn-brutal-sm bg-white text-sup-green w-7 h-7 rounded-md font-bold text-xs flex items-center justify-center">✕</button>
+                </div>
+                <div class="checkerboard-strip"></div>
+                <div class="p-4 space-y-2.5 text-xs font-medium text-sup-green">
+                    <p class="font-bold uppercase text-[11px]">Lleva el radar en tu pantalla de inicio:</p>
+                    <div class="bg-white border-2 border-sup-green rounded-md p-2.5 space-y-1">
+                        <p><strong>Android / Chrome:</strong> Toca el menú ⋮ → <em>"Instalar aplicación"</em> o
+                            <em>"Agregar a pantalla principal"</em>.</p>
+                        <p><strong>iPhone / Safari:</strong> Toca el ícono compartir <i
+                                class="fa-solid fa-arrow-up-from-bracket"></i> → <em>"Agregar a inicio"</em>.</p>
+                    </div>
+                    <button type="button" data-action="close-pwa-modal"
+                        class="btn-brutal w-full bg-sup-orange text-white font-display text-xs uppercase py-2.5 rounded-md">ENTENDIDO</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PANTALLA 0: LANDING PAGE CENTRAL                                      -->
+        <!-- ===================================================================== -->
+        <section id="screen-0"
+            class="landing-shell px-4 py-3.5 sm:px-8 sm:py-5 flex flex-col items-center text-center animate-pop">
+            <div
+                class="inline-flex items-center gap-1.5 bg-white border-2 border-sup-green shadow-hard-sm px-3 py-0.5 rounded-full mb-1.5 sm:mb-2">
+                <span class="w-2 h-2 rounded-full bg-sup-orange animate-pulse"></span>
+                <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-sup-green">
+                    RADAR EN VIVO • CORREDORES DE AREQUIPA
+                </span>
+            </div>
+
+            <div class="my-0.5 relative group select-none">
+                <svg viewBox="0 0 220 112"
+                    class="w-28 sm:w-40 h-auto drop-shadow-[3px_3px_0px_#063120] sm:drop-shadow-[4px_4px_0px_#063120] transform -rotate-2 group-hover:rotate-0 transition-transform duration-200"
+                    aria-label="Logo Vámonos Club Arequipa">
+                    <rect x="8" y="10" width="204" height="90" rx="18" fill="#FFFFFF" stroke="#063120"
+                        stroke-width="4" />
+                    <rect x="14" y="16" width="192" height="78" rx="13" fill="#063120" />
+                    <path d="M22 24 H198 V32 H22 Z" fill="#FA4A19" />
+                    <rect x="22" y="24" width="11" height="8" fill="#E7DEC8" />
+                    <rect x="44" y="24" width="11" height="8" fill="#E7DEC8" />
+                    <rect x="66" y="24" width="11" height="8" fill="#E7DEC8" />
+                    <rect x="88" y="24" width="11" height="8" fill="#E7DEC8" />
+                    <rect x="110" y="24" width="11" height="8" fill="#E7DEC8" />
+                    <rect x="132" y="24" width="11" height="8" fill="#E7DEC8" />
+                    <rect x="154" y="24" width="11" height="8" fill="#E7DEC8" />
+                    <rect x="176" y="24" width="11" height="8" fill="#E7DEC8" />
+                    <circle cx="43" cy="60" r="16" fill="#FA4A19" stroke="#E7DEC8" stroke-width="2.5" />
+                    <path
+                        d="M43 50 C38.5 50 35 53.5 35 58 C35 63.5 43 70 43 70 C43 70 51 63.5 51 58 C51 53.5 47.5 50 43 50 Z"
+                        fill="#E7DEC8" />
+                    <circle cx="43" cy="58" r="3" fill="#063120" />
+                    <text x="128" y="61" text-anchor="middle" fill="#E7DEC8" font-family="'Archivo Black', sans-serif"
+                        font-size="22" letter-spacing="-0.5">VÁMONOS</text>
+                    <text x="128" y="81" text-anchor="middle" fill="#FA4A19" font-family="'Pacifico', cursive"
+                        font-size="18">Arequipa Club</text>
+                </svg>
+            </div>
+
+            <h1 class="font-display text-2xl sm:text-4xl text-sup-green leading-[1.04] tracking-tight mt-1 max-w-xl">
+                Comparte taxi seguro en <span class="text-sup-orange">Arequipa.</span>
+            </h1>
+
+            <p class="text-[11px] sm:text-xs font-medium text-sup-green/85 max-w-lg mt-1 leading-snug">
+                Conecta con universitarios y vecinos verificados (<strong>UTP, UNSA, UCSM, SENATI, TECSUP,
+                    USMP</strong>), coordinen en el chat y dividan un <strong>Uber o InDrive</strong>.
+            </p>
+
+            <div class="w-full max-w-md mt-2.5 sm:mt-3 space-y-2">
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" id="tab-login-btn"
+                        class="px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider border-2 border-sup-green bg-sup-green text-sup-cream transition-colors">
+                        1. Login
+                    </button>
+                    <button type="button" id="tab-register-btn"
+                        class="px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider border-2 border-sup-green bg-white text-sup-green hover:bg-sup-creamDark transition-colors">
+                        2. Registrarme 🎓
+                    </button>
+                </div>
+
+                <!-- PESTAÑA 1: LOGIN (CORREO + CONTRASEÑA REGISTRADOS) -->
+                <form id="auth-login-box"
+                    class="bg-white border-2 border-sup-green shadow-hard-sm rounded-2xl p-3 sm:p-3.5 text-left space-y-2 animate-pop"
+                    novalidate>
+                    <div>
+                        <label for="login-email"
+                            class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CORREO
+                            REGISTRADO *</label>
+                        <input type="email" id="login-email" autocomplete="email"
+                            placeholder="tu.correo@utp.edu.pe o personal"
+                            class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-3 py-1.5 text-xs font-bold text-sup-green placeholder-sup-green/45 focus:outline-none focus:bg-white focus:ring-2 focus:ring-sup-orange">
+                        <div id="login-domain-feedback" class="hidden mt-1"></div>
+                    </div>
+                    <div>
+                        <label for="login-password"
+                            class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CONTRASEÑA
+                            *</label>
+                        <input type="password" id="login-password" autocomplete="current-password"
+                            placeholder="Tu contraseña"
+                            class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-3 py-1.5 text-xs font-bold text-sup-green placeholder-sup-green/45 focus:outline-none focus:bg-white focus:ring-2 focus:ring-sup-orange">
+                    </div>
+                    <button type="submit" id="login-submit-btn"
+                        class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs sm:text-sm uppercase tracking-wide py-2.5 px-4 rounded-full flex items-center justify-center gap-1.5">
+                        <span>Entrar al Mapa</span>
+                        <span>→</span>
+                    </button>
+                    <div class="flex items-center justify-between pt-0.5 text-[10px] font-bold">
+                        <button type="button" id="forgot-password-btn"
+                            class="text-sup-green/75 hover:text-sup-orange underline">¿Olvidaste tu contraseña?</button>
+                        <button type="button" id="switch-to-register-btn"
+                            class="text-sup-green hover:text-sup-orange underline">¿Nuevo? Crea tu cuenta →</button>
+                    </div>
+                </form>
+
+                <!-- PESTAÑA 2: REGISTRO COMPLETO -->
+                <form id="auth-register-box"
+                    class="hidden bg-white border-2 border-sup-green shadow-hard-sm rounded-2xl p-3 sm:p-3.5 text-left space-y-2 animate-pop"
+                    novalidate>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                            <label for="reg-name"
+                                class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">NOMBRE
+                                CORTO *</label>
+                            <input type="text" id="reg-name" autocomplete="name" placeholder="Ej. Camila S."
+                                class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
+                        </div>
+                        <div>
+                            <label for="reg-gender"
+                                class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">GÉNERO
+                                (SEGURIDAD) *</label>
+                            <select id="reg-gender"
+                                class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
+                                <option value="" selected disabled>Elegir...</option>
+                                <option value="F">Femenino</option>
+                                <option value="M">Masculino</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="reg-phone"
+                            class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">TELÉFONO /
+                            WHATSAPP (PRIVADO) *</label>
+                        <input type="tel" id="reg-phone" inputmode="numeric" maxlength="12" autocomplete="tel"
+                            placeholder="Ej. 987654321"
+                            class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
+                        <p class="text-[9px] font-medium text-sup-green/70 mt-0.5">🔒 Solo respaldo de seguridad en tu
+                            cuenta; nunca se muestra a otros usuarios.</p>
+                    </div>
+                    <div>
+                        <label for="reg-email"
+                            class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CORREO
+                            INSTITUCIONAL O PERSONAL *</label>
+                        <input type="email" id="reg-email" autocomplete="email"
+                            placeholder="codigo@utp.edu.pe / @unsa.edu.pe / @senati.pe..."
+                            class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
+                        <div id="reg-domain-feedback" class="hidden mt-1"></div>
+                    </div>
+                    <div>
+                        <label for="reg-password"
+                            class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CREA TU
+                            CONTRASEÑA *</label>
+                        <input type="password" id="reg-password" minlength="6" autocomplete="new-password"
+                            placeholder="Mínimo 6 caracteres"
+                            class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
+                    </div>
+                    <button type="submit" id="register-submit-btn"
+                        class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs sm:text-sm uppercase tracking-wide py-2.5 px-4 rounded-full flex items-center justify-center gap-1.5">
+                        <span>Registrarme y Verificar Correo</span>
+                        <span>→</span>
+                    </button>
+                </form>
+
+                <!-- PASO 2: CONFIRMACIÓN POR ENLACE AL CORREO -->
+                <div id="email-confirmation-box"
+                    class="hidden bg-white border-2 border-sup-green shadow-hard-sm rounded-2xl p-3.5 text-left space-y-2 animate-pop">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-[10px] font-bold uppercase text-sup-green">📩 ENLACE ENVIADO A <span
+                                id="confirm-target-email" class="text-sup-orange"></span></span>
+                        <button type="button" id="change-email-btn"
+                            class="text-[10px] font-bold uppercase underline text-sup-green/75 hover:text-sup-orange">EDITAR</button>
+                    </div>
+                    <p class="text-[11px] font-semibold text-sup-green/85 leading-snug">
+                        Abre tu correo (revisa <strong>Spam</strong>) y haz clic en el enlace de confirmación para
+                        activar tu cuenta e insignia 🎓. Luego entrarás automático o desde <strong>Login</strong>.
+                    </p>
+                    <button type="button" id="back-to-login-btn"
+                        class="btn-brutal-sm w-full bg-sup-green hover:bg-sup-greenLight text-sup-cream font-display text-xs uppercase py-2 rounded-lg">
+                        Ya confirmé → Ir a Login
+                    </button>
+                </div>
+
+                <!-- RECUPERACIÓN DE CONTRASEÑA (TRAS HACER CLIC EN ENLACE DEL CORREO) -->
+                <form id="password-recovery-box"
+                    class="hidden bg-white border-2 border-sup-green shadow-hard-sm rounded-2xl p-3.5 text-left space-y-2 animate-pop"
+                    novalidate>
+                    <span class="block text-[10px] font-bold uppercase text-sup-green">🔐 CREA TU NUEVA
+                        CONTRASEÑA</span>
+                    <input type="password" id="new-password-input" minlength="6" autocomplete="new-password"
+                        placeholder="Nueva contraseña (mín. 6 caracteres)"
+                        class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-3 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
+                    <button type="submit" id="save-new-password-btn"
+                        class="btn-brutal-sm w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs uppercase py-2 rounded-lg">
+                        Guardar y Entrar
+                    </button>
+                </form>
+            </div>
+
+            <div class="w-full max-w-2xl border-t-2 border-sup-green/20 mt-3 pt-2.5">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div
+                        class="bg-white border-2 border-sup-green shadow-hard-sm rounded-xl sm:rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 flex items-center gap-2 text-left">
+                        <span
+                            class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-sup-orange border-2 border-sup-green shrink-0"></span>
+                        <span class="text-[10px] sm:text-[11px] font-bold text-sup-green leading-tight">
+                            🎓 Estudiantes Verificados (UTP, UNSA, UCSM)
+                        </span>
+                    </div>
+                    <div
+                        class="bg-white border-2 border-sup-green shadow-hard-sm rounded-xl sm:rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 flex items-center gap-2 text-left">
+                        <span
+                            class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-sup-yellow border-2 border-sup-green shrink-0"></span>
+                        <span class="text-[10px] sm:text-[11px] font-bold text-sup-green leading-tight">
+                            📍 Radio Privado 250m + Filtro Solo Mujeres
+                        </span>
+                    </div>
+                    <div
+                        class="bg-white border-2 border-sup-green shadow-hard-sm rounded-xl sm:rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 flex items-center gap-2 text-left">
+                        <span
+                            class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#1E7A50] border-2 border-sup-green shrink-0"></span>
+                        <span class="text-[10px] sm:text-[11px] font-bold text-sup-green leading-tight">
+                            🚕 Uber / InDrive • Divide la tarifa
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- CONTENEDOR DE LA APLICACIÓN INTERACTIVA (PANTALLAS 1 A 4)             -->
+        <!-- ===================================================================== -->
+        <div class="app-shell hidden" id="app-container">
+
+            <!-- MODAL 1: PERFIL -->
+            <div id="profile-modal"
+                class="hidden absolute inset-0 z-[1200] bg-sup-green/80 backdrop-blur-[2px] flex items-center justify-center p-3.5 sm:p-4">
+                <div
+                    class="bg-sup-cream border-[3px] border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop">
+                    <div class="px-4 py-2.5 bg-sup-cream flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-sup-green"></span>
+                            <span class="font-display text-xs uppercase tracking-wider text-sup-green">MI PERFIL •
+                                VÁMONOS CLUB</span>
+                        </div>
+                        <button type="button" id="close-profile-modal-btn"
+                            class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white text-sup-green w-7 h-7 rounded-md font-bold text-xs flex items-center justify-center"
+                            aria-label="Cerrar perfil">✕</button>
+                    </div>
+                    <div class="checkerboard-strip"></div>
+
+                    <div class="p-4 space-y-3.5 max-h-[75dvh] overflow-y-auto no-scrollbar">
+                        <div
+                            class="bg-sup-green text-sup-cream p-3.5 rounded-lg border-2 border-sup-green shadow-hard-sm space-y-3">
+                            <div class="flex items-center gap-3">
+                                <div class="relative shrink-0">
+                                    <div id="modal-avatar-initials"
+                                        class="w-12 h-12 rounded-lg bg-sup-orange text-white font-display text-lg flex items-center justify-center border-2 border-sup-cream">
+                                        HH
+                                    </div>
+                                    <span
+                                        class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1E7A50] text-white border-2 border-sup-green flex items-center justify-center text-[9px]"
+                                        title="Identidad Verificada">
+                                        <i class="fa-solid fa-check"></i>
+                                    </span>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 id="modal-user-name"
+                                        class="font-display text-base uppercase text-white truncate">HUGO H.</h3>
+                                    <span id="modal-user-badge"
+                                        class="inline-block bg-sup-cream text-sup-green text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm mt-1">
+                                        🎓 ESTUDIANTE VERIFICADO • UTP
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-2 pt-2.5 border-t border-sup-cream/20 text-center">
+                                <div>
+                                    <span id="modal-stat-rating" class="block font-display text-sm text-sup-orange">⭐
+                                        5.0</span>
+                                    <span class="text-[9px] font-bold uppercase text-sup-cream/80">PUNTAJE</span>
+                                </div>
+                                <div>
+                                    <span id="modal-stat-punctuality"
+                                        class="block font-display text-sm text-white">100%</span>
+                                    <span class="text-[9px] font-bold uppercase text-sup-cream/80">PUNTUALIDAD</span>
+                                </div>
+                                <div>
+                                    <span id="modal-stat-trips" class="block font-display text-sm text-white">0</span>
+                                    <span class="text-[9px] font-bold uppercase text-sup-cream/80">VIAJES</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-white border-2 border-sup-green rounded-md p-2.5">
+                                <span
+                                    class="block text-[9px] font-bold uppercase tracking-wider text-sup-green/65">GÉNERO
+                                    REGISTRADO</span>
+                                <span id="modal-user-gender"
+                                    class="block text-xs font-bold uppercase text-sup-green mt-0.5">MASCULINO</span>
+                            </div>
+                            <div class="bg-white border-2 border-sup-green rounded-md p-2.5 min-w-0">
+                                <span
+                                    class="block text-[9px] font-bold uppercase tracking-wider text-sup-green/65">CORREO
+                                    INSTITUCIONAL</span>
+                                <span id="modal-user-email"
+                                    class="block text-xs font-bold text-sup-green truncate mt-0.5">NO VINCULADO</span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-white border-2 border-sup-green rounded-md p-2.5 flex items-center justify-between gap-2">
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-sup-green/65">WHATSAPP
+                                PRIVADO (SOLO TU CUENTA)</span>
+                            <span id="modal-user-phone" class="text-xs font-bold text-sup-green">NO REGISTRADO</span>
+                        </div>
+
+                        <div class="bg-white border-2 border-sup-green p-3 rounded-md space-y-2">
+                            <p class="text-[10px] font-bold uppercase tracking-wide text-sup-green">VINCULAR O
+                                ACTUALIZAR CORREO UNIVERSITARIO:</p>
+                            <div class="flex flex-wrap gap-1">
+                                <span
+                                    class="text-[9px] font-bold bg-sup-cream border border-sup-green px-1.5 py-0.5 rounded-[2px]">@utp.edu.pe</span>
+                                <span
+                                    class="text-[9px] font-bold bg-sup-cream border border-sup-green px-1.5 py-0.5 rounded-[2px]">@unsa.edu.pe</span>
+                                <span
+                                    class="text-[9px] font-bold bg-sup-cream border border-sup-green px-1.5 py-0.5 rounded-[2px]">@ucsm.edu.pe</span>
+                                <span
+                                    class="text-[9px] font-bold bg-sup-cream border border-sup-green px-1.5 py-0.5 rounded-[2px]">@ucsp.edu.pe</span>
+                                <span
+                                    class="text-[9px] font-bold bg-sup-cream border border-sup-green px-1.5 py-0.5 rounded-[2px]">@senati.pe</span>
+                                <span
+                                    class="text-[9px] font-bold bg-sup-cream border border-sup-green px-1.5 py-0.5 rounded-[2px]">@tecsup.edu.pe</span>
+                                <span
+                                    class="text-[9px] font-bold bg-sup-cream border border-sup-green px-1.5 py-0.5 rounded-[2px]">@usmp.pe</span>
+                            </div>
+                            <div class="flex gap-1.5 pt-0.5">
+                                <input type="email" id="demo-uni-email" placeholder="codigo@unsa.edu.pe"
+                                    class="flex-1 bg-sup-cream border-2 border-sup-green rounded-sm px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
+                                <button type="button" id="verify-uni-btn"
+                                    class="btn-brutal-sm bg-sup-green text-sup-cream hover:bg-sup-orange hover:text-white text-[10px] font-bold uppercase px-3 py-1.5 rounded-sm">VINCULAR</button>
+                            </div>
+                        </div>
+
+                        <div class="pt-1 border-t-2 border-sup-green/20">
+                            <button type="button" id="logout-profile-btn"
+                                class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs uppercase tracking-wider py-3 rounded-md flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                <span>CERRAR SESIÓN / SALIR</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL 2: ENCUESTA POST-VIAJE -->
+            <div id="rating-modal"
+                class="hidden absolute inset-0 z-[1200] bg-sup-green/85 backdrop-blur-[2px] flex items-center justify-center p-3.5 sm:p-4">
+                <div
+                    class="bg-sup-cream border-[3px] border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop">
+                    <div class="px-4 py-2.5 bg-sup-green text-sup-cream flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-sup-cream animate-ping"></span>
+                            <span class="font-display text-xs uppercase tracking-wider text-sup-orange">ENCUESTA
+                                OBLIGATORIA</span>
+                        </div>
+                        <span
+                            class="text-[9px] font-bold uppercase bg-sup-orange/20 border border-sup-orange text-sup-cream px-1.5 py-0.5 rounded-[2px]">REGLA
+                            DE CONFIANZA</span>
+                    </div>
+                    <div class="checkerboard-strip"></div>
+
+                    <div class="p-4 space-y-3.5">
+                        <div id="pending-survey-alert"
+                            class="hidden bg-sup-yellow/25 border-2 border-sup-green rounded-md px-2.5 py-1.5 text-[10px] font-bold text-sup-green leading-snug">
+                            ⚠️ TIENES UN VIAJE ANTERIOR SIN CALIFICAR. Completa esta encuesta para desbloquear nuevas
+                            rutas.
+                        </div>
+
+                        <div
+                            class="flex items-center gap-3 bg-white border-2 border-sup-green shadow-hard-sm p-2.5 rounded-lg">
+                            <img id="rating-partner-avatar" src="" alt="Compañero"
+                                class="w-12 h-12 rounded-md object-cover border-2 border-sup-green shrink-0">
+                            <div class="min-w-0 flex-1">
+                                <span
+                                    class="block text-[9px] font-bold uppercase tracking-wider text-sup-green/65">¿CÓMO
+                                    FUE VIAJAR CON</span>
+                                <h3 id="rating-partner-name"
+                                    class="font-display text-base uppercase text-sup-green truncate">VALERIA R.</h3>
+                                <span id="rating-partner-uni"
+                                    class="inline-block bg-sup-cream border border-sup-green text-sup-green text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-[2px] mt-0.5">🎓
+                                    UTP VERIFICADO</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border-2 border-sup-green rounded-lg p-3 text-center space-y-1.5">
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-sup-green">CALIFICA
+                                TU EXPERIENCIA (1 A 5)</span>
+                            <div id="star-rating-group" class="flex items-center justify-center gap-2 py-1">
+                                <button type="button" data-star="1"
+                                    class="star-btn w-10 h-10 rounded-md border-2 border-sup-green bg-sup-orange text-white font-display text-base shadow-hard-sm transition-transform active:translate-y-0.5"
+                                    aria-label="1 estrella"><i class="fa-solid fa-star"></i></button>
+                                <button type="button" data-star="2"
+                                    class="star-btn w-10 h-10 rounded-md border-2 border-sup-green bg-sup-orange text-white font-display text-base shadow-hard-sm transition-transform active:translate-y-0.5"
+                                    aria-label="2 estrellas"><i class="fa-solid fa-star"></i></button>
+                                <button type="button" data-star="3"
+                                    class="star-btn w-10 h-10 rounded-md border-2 border-sup-green bg-sup-orange text-white font-display text-base shadow-hard-sm transition-transform active:translate-y-0.5"
+                                    aria-label="3 estrellas"><i class="fa-solid fa-star"></i></button>
+                                <button type="button" data-star="4"
+                                    class="star-btn w-10 h-10 rounded-md border-2 border-sup-green bg-sup-orange text-white font-display text-base shadow-hard-sm transition-transform active:translate-y-0.5"
+                                    aria-label="4 estrellas"><i class="fa-solid fa-star"></i></button>
+                                <button type="button" data-star="5"
+                                    class="star-btn w-10 h-10 rounded-md border-2 border-sup-green bg-sup-orange text-white font-display text-base shadow-hard-sm transition-transform active:translate-y-0.5"
+                                    aria-label="5 estrellas"><i class="fa-solid fa-star"></i></button>
+                            </div>
+                            <span id="rating-star-label"
+                                class="inline-block bg-sup-green text-sup-cream text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full">
+                                ⭐⭐⭐⭐⭐ ¡EXCELENTE COMPAÑERO!
+                            </span>
+                        </div>
+
+                        <div class="flex flex-wrap gap-1.5 justify-center">
+                            <button type="button" data-review-tag="Puntual en el punto"
+                                class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green text-[10px] font-bold px-2 py-1 rounded-full">⏱️
+                                Puntual</button>
+                            <button type="button" data-review-tag="Yapeó rápido su parte"
+                                class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green text-[10px] font-bold px-2 py-1 rounded-full">💸
+                                Yapeó al toque</button>
+                            <button type="button" data-review-tag="Buena onda y seguro"
+                                class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green text-[10px] font-bold px-2 py-1 rounded-full">🛡️
+                                Súper seguro</button>
+                        </div>
+
+                        <div>
+                            <label for="rating-comment-input"
+                                class="block text-[10px] font-bold uppercase tracking-wider text-sup-green mb-1">
+                                COMENTARIOS SOBRE TU COMPAÑERO DE VIAJE
+                            </label>
+                            <textarea id="rating-comment-input" rows="2"
+                                placeholder="Ej. Muy puntual en la esquina de Av. Parra y dividimos el InDrive sin problemas..."
+                                class="w-full bg-white border-2 border-sup-green shadow-hard-sm rounded-lg p-2.5 text-xs font-medium text-sup-green placeholder-sup-green/45 focus:outline-none focus:ring-2 focus:ring-sup-orange resize-none"></textarea>
+                        </div>
+
+                        <button type="button" id="submit-survey-btn"
+                            class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs uppercase tracking-wider py-3 rounded-md flex items-center justify-center gap-2">
+                            <span>ENVIAR CALIFICACIÓN Y NUEVO VIAJE</span>
+                            <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL 3: SOLICITUD ENVIADA (60S) -->
+            <div id="request-pending-modal"
+                class="hidden absolute inset-0 z-[1200] bg-sup-green/85 backdrop-blur-[2px] flex items-center justify-center p-3.5 sm:p-4">
+                <div
+                    class="bg-sup-cream border-[3px] border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop">
+                    <div class="px-4 py-2.5 bg-sup-green text-sup-cream flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-sup-cream animate-ping"></span>
+                            <span class="font-display text-xs uppercase tracking-wider text-sup-orange">SOLICITUD
+                                ENVIADA</span>
+                        </div>
+                        <span id="request-countdown-badge"
+                            class="bg-sup-orange text-white font-display text-xs px-2 py-0.5 rounded-sm border border-sup-cream">60s</span>
+                    </div>
+                    <div class="checkerboard-strip"></div>
+
+                    <div class="p-4 space-y-3.5 text-center">
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="relative">
+                                <img id="req-partner-avatar" src="" alt="Compañero"
+                                    class="w-16 h-16 rounded-xl object-cover border-[3px] border-sup-green shadow-hard-sm">
+                                <span
+                                    class="absolute -top-2 -right-2 bg-sup-orange text-white border-2 border-sup-green rounded-full w-7 h-7 flex items-center justify-center text-xs shadow-hard-sm animate-bounce">
+                                    <i class="fa-solid fa-bell"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <span
+                                    class="text-[10px] font-bold uppercase tracking-widest text-sup-green/70">NOTIFICACIÓN
+                                    ENVIADA A</span>
+                                <h3 id="req-partner-name"
+                                    class="font-display text-lg uppercase text-sup-green leading-tight">VALERIA R.</h3>
+                                <span id="req-partner-uni"
+                                    class="inline-block bg-white border border-sup-green text-sup-green text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm mt-1">
+                                    🎓 UTP VERIFICADO
+                                </span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-sup-green text-sup-cream border-2 border-sup-green shadow-hard-sm rounded-lg p-3 text-left space-y-1">
+                            <div
+                                class="flex items-center justify-between text-[9px] font-bold uppercase text-sup-orange">
+                                <span>📲 ALERTA EN CELULAR DE DESTINO</span>
+                                <span>AHORA</span>
+                            </div>
+                            <p id="req-push-preview" class="text-[11px] font-medium text-sup-cream/95 leading-snug">
+                                "Hugo H. (🎓 UTP) quiere compartir taxi contigo hacia Cerro Colorado. Toca para
+                                aceptar."
+                            </p>
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="w-full h-2.5 bg-white border-2 border-sup-green rounded-full overflow-hidden">
+                                <div id="req-progress-bar"
+                                    class="h-full bg-sup-orange transition-all duration-1000 ease-linear"
+                                    style="width: 100%;"></div>
+                            </div>
+                            <p class="text-[10px] font-bold uppercase text-sup-green/75">
+                                Esperando que acepte para abrir la sala de chat...
+                            </p>
+                        </div>
+
+                        <div id="request-pending-actions" class="grid grid-cols-2 gap-2 pt-1">
+                            <button type="button" id="cancel-pending-req-btn"
+                                class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green font-bold text-[10px] uppercase py-2.5 rounded-md">
+                                CANCELAR SOLICITUD
+                            </button>
+                            <button type="button" id="simulate-accept-req-btn"
+                                class="btn-brutal bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-[10px] uppercase py-2.5 rounded-md">
+                                ⚡ SIMULAR ACEPTACIÓN
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL 4: SOLICITUD ENTRANTE EN TIEMPO REAL (PARA QUIEN RECIBE INVITACIÓN) -->
+            <div id="incoming-request-modal"
+                class="hidden absolute inset-0 z-[1200] bg-sup-green/85 backdrop-blur-[2px] flex items-center justify-center p-3.5 sm:p-4">
+                <div
+                    class="bg-sup-cream border-[3px] border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop">
+                    <div class="px-4 py-2.5 bg-sup-orange text-white flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+                            <span class="font-display text-xs uppercase tracking-wider">¡ALGUIEN QUIERE
+                                COMPARTIR!</span>
+                        </div>
+                        <span id="incoming-countdown-badge"
+                            class="bg-sup-green text-sup-cream font-display text-xs px-2 py-0.5 rounded-sm border border-white">60s</span>
+                    </div>
+                    <div class="checkerboard-strip"></div>
+
+                    <div class="p-4 space-y-3.5 text-center">
+                        <div class="flex flex-col items-center space-y-1.5">
+                            <img id="inc-partner-avatar" src="" alt="Solicitante"
+                                class="w-16 h-16 rounded-xl object-cover border-[3px] border-sup-green shadow-hard-sm">
+                            <h3 id="inc-partner-name"
+                                class="font-display text-lg uppercase text-sup-green leading-tight">VALERIA R.</h3>
+                            <span id="inc-partner-uni"
+                                class="inline-block bg-white border border-sup-green text-sup-green text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">
+                                🎓 ESTUDIANTE VERIFICADO UTP
+                            </span>
+                            <p id="inc-partner-stats" class="text-[10px] font-bold text-sup-green/80 uppercase">⭐ 4.9 •
+                                98% PUNTUAL</p>
+                        </div>
+
+                        <div
+                            class="bg-white border-2 border-sup-green shadow-hard-sm rounded-lg p-3 text-left space-y-1">
+                            <span class="block text-[9px] font-bold uppercase text-sup-orange">RUTA PROPUESTA:</span>
+                            <p id="inc-route-summary" class="text-xs font-bold uppercase text-sup-green leading-snug">
+                                UTP → CERRO COLORADO</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button type="button" id="reject-incoming-req-btn"
+                                class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green font-bold text-[10px] uppercase py-2.5 rounded-md">
+                                ✕ RECHAZAR
+                            </button>
+                            <button type="button" id="accept-incoming-req-btn"
+                                class="btn-brutal bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-[10px] uppercase py-2.5 rounded-md">
+                                🤝 ACEPTAR Y CHATEAR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANTALLA 1: MAPA DE AREQUIPA Y BUSCADOR DE RUTA -->
+            <section id="screen-1" class="hidden flex-col h-full w-full overflow-hidden">
+                <div class="relative p-3 bg-sup-cream border-b-2 border-sup-green space-y-2 shrink-0 z-20">
+                    <div class="grid grid-cols-1 gap-1.5">
+                        <div class="flex items-center gap-1.5">
+                            <div
+                                class="flex-1 flex items-center gap-1.5 bg-white border-2 border-sup-green shadow-hard-sm rounded-md px-2.5 py-1.5 min-w-0">
+                                <span
+                                    class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-sup-green shrink-0"></span>
+                                <label for="origin-input"
+                                    class="text-[9px] font-bold uppercase text-sup-green/70 shrink-0">SALIDA:</label>
+                                <input type="text" id="origin-input" value="UTP - AV. PARRA" autocomplete="off"
+                                    placeholder="Escribe calle, UTP, Mall o elige en mapa..."
+                                    class="w-full bg-transparent text-xs font-bold uppercase text-sup-green placeholder-sup-green/45 focus:outline-none truncate">
+                            </div>
+                            <button type="button" id="pick-origin-map-btn" title="Elegir punto de salida en el mapa"
+                                class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white text-sup-green px-2 py-2 rounded-md text-[10px] font-bold uppercase shrink-0 flex items-center gap-1">
+                                <i class="fa-solid fa-map-pin"></i>
+                            </button>
+                            <button type="button" id="gps-locate-btn" title="Centrar radio 250m en mi GPS actual"
+                                class="btn-brutal-sm bg-sup-green hover:bg-sup-orange text-sup-cream px-2.5 py-2 rounded-md text-[10px] font-bold uppercase shrink-0 flex items-center gap-1">
+                                <i class="fa-solid fa-crosshairs"></i>
+                                <span>GPS</span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-1.5">
+                            <div
+                                class="flex-1 flex items-center gap-1.5 bg-white border-2 border-sup-green shadow-hard-sm rounded-md px-2.5 py-1.5 min-w-0">
+                                <span class="w-2.5 h-2.5 rounded-sm bg-sup-green shrink-0"></span>
+                                <label for="dest-input"
+                                    class="text-[9px] font-bold uppercase text-sup-green/70 shrink-0">DESTINO:</label>
+                                <input type="text" id="dest-input" value="CERRO COLORADO (AV. AVIACIÓN)"
+                                    autocomplete="off" placeholder="Escribe distrito, avenida o toca el mapa..."
+                                    class="w-full bg-transparent text-xs font-bold uppercase text-sup-green placeholder-sup-green/45 focus:outline-none truncate">
+                            </div>
+                            <button type="button" id="pick-dest-map-btn" title="Elegir destino en el mapa"
+                                class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white text-sup-green px-2.5 py-2 rounded-md text-[10px] font-bold uppercase shrink-0 flex items-center gap-1">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <span>MAPA</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lista desplegable flotante de sugerencias (Nodos + OpenStreetMap Arequipa) -->
+                    <div id="place-suggestions-box"
+                        class="hidden absolute left-3 right-3 top-[calc(100%-4px)] z-[1100] bg-white border-2 border-sup-green shadow-hard rounded-md max-h-52 overflow-y-auto no-scrollbar divide-y divide-sup-green/15">
+                    </div>
+                </div>
+
+                <div class="relative flex-1 w-full min-h-[210px] retro-map-tiles overflow-hidden">
+                    <div id="map-screen-1" class="w-full h-full"></div>
+                    <div
+                        class="absolute top-2.5 left-2.5 z-[1001] bg-sup-green text-sup-cream border-2 border-sup-orange shadow-hard-sm px-2.5 py-1 rounded-sm flex items-center gap-1.5 text-[10px] font-bold uppercase">
+                        <span class="w-2 h-2 rounded-full bg-sup-orange animate-ping"></span>
+                        <span>RADIO PRIVADO 250M ACTIVO</span>
+                    </div>
+                    <div id="map-pick-banner"
+                        class="hidden absolute top-11 left-2.5 right-2.5 z-[1001] bg-sup-orange text-white border-2 border-sup-green shadow-hard-sm px-2.5 py-1.5 rounded-sm flex items-center justify-between gap-2 text-[10px] font-bold uppercase">
+                        <span id="map-pick-text">👆 TOCA EL MAPA PARA ELEGIR SALIDA</span>
+                        <button type="button" id="cancel-map-pick-btn"
+                            class="bg-sup-green text-sup-cream px-1.5 py-0.5 rounded-[2px] text-[9px] font-bold">✕</button>
+                    </div>
+                    <div id="route-stats-badge"
+                        class="hidden absolute bottom-2.5 left-2.5 z-[1001] bg-sup-cream text-sup-green border-2 border-sup-green shadow-hard-sm px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase">
+                        🛣️ CALCULANDO RUTA...
+                    </div>
+                </div>
+
+                <div class="p-3 bg-sup-cream border-t-2 border-sup-green space-y-2.5 shrink-0">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span
+                                class="inline-block bg-sup-orange text-white border border-sup-green px-1.5 py-0.5 rounded-[2px] text-[9px] font-display uppercase tracking-wider mb-1 shadow-hard-sm">¿CUÁNDO
+                                SALES?</span>
+                            <div class="grid grid-cols-3 gap-1">
+                                <button type="button" data-time="AHORA"
+                                    class="time-btn btn-brutal-sm bg-sup-orange text-white text-[10px] font-bold py-1.5 rounded-sm uppercase">AHORA</button>
+                                <button type="button" data-time="10 MIN"
+                                    class="time-btn btn-brutal-sm bg-white text-sup-green hover:bg-sup-orange/15 text-[10px] font-bold py-1.5 rounded-sm uppercase">10M</button>
+                                <button type="button" data-time="20 MIN"
+                                    class="time-btn btn-brutal-sm bg-white text-sup-green hover:bg-sup-orange/15 text-[10px] font-bold py-1.5 rounded-sm uppercase">20M</button>
+                            </div>
+                        </div>
+                        <div>
+                            <span
+                                class="inline-block bg-sup-green text-sup-cream border border-sup-green px-1.5 py-0.5 rounded-[2px] text-[9px] font-display uppercase tracking-wider mb-1 shadow-hard-sm">DIVIDIR
+                                CON:</span>
+                            <div class="grid grid-cols-2 gap-1">
+                                <button type="button" data-payment="YAPE / PLIN"
+                                    class="pay-btn btn-brutal-sm bg-sup-plum text-white text-[10px] font-bold py-1.5 rounded-sm uppercase">YAPE/PLIN</button>
+                                <button type="button" data-payment="EFECTIVO"
+                                    class="pay-btn btn-brutal-sm bg-white text-sup-green text-[10px] font-bold py-1.5 rounded-sm uppercase">EFECTIVO</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <label
+                        class="flex items-center justify-between bg-white border-2 border-sup-green rounded-md px-3 py-2 cursor-pointer select-none">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm">♀</span>
+                            <div>
+                                <span class="block text-[11px] font-bold uppercase text-sup-green leading-none">SOLO
+                                    MUJERES VERIFICADAS</span>
+                                <span id="women-only-subtitle" class="text-[9px] font-medium text-sup-green/70">Filtra
+                                    coincidencias exclusivamente femeninas</span>
+                            </div>
+                        </div>
+                        <input type="checkbox" id="women-only-toggle"
+                            class="w-4 h-4 accent-[#FA4A19] border-2 border-sup-green rounded-[2px]">
+                    </label>
+
+                    <button type="button" id="start-radar-btn"
+                        class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-sm uppercase tracking-wider py-3 rounded-md flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-satellite-dish"></i>
+                        <span>BUSCAR COMPAÑEROS EN RUTA</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- PANTALLA 2: RADAR DE COINCIDENCIAS -->
+            <section id="screen-2" class="hidden flex-col h-full w-full overflow-hidden">
+                <div class="bg-sup-green text-sup-cream p-3 border-b-2 border-sup-green shrink-0 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <button type="button" id="radar-back-map-btn"
+                            class="btn-brutal-sm bg-sup-cream text-sup-green text-[10px] font-bold uppercase px-2.5 py-1 rounded-sm">
+                            ← MAPA
+                        </button>
+                        <span id="radar-user-badge"
+                            class="bg-sup-orange text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm border border-sup-cream">
+                            🎓 UTP
+                        </span>
+                    </div>
+                    <div>
+                        <h2 class="font-display text-lg uppercase text-sup-orange leading-tight">RADAR EN VIVO</h2>
+                        <p id="radar-route-label" class="text-[11px] font-bold uppercase text-sup-cream truncate">UTP →
+                            CERRO COLORADO</p>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 pt-0.5">
+                        <span id="radar-time-badge"
+                            class="text-[10px] font-bold uppercase bg-sup-greenLight border border-sup-cream/30 px-2 py-1 rounded-sm">
+                            SALIDA: AHORA
+                        </span>
+                        <button type="button" id="radar-women-pill"
+                            class="px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase border-2 transition-all bg-sup-cream text-sup-green border-sup-cream">
+                            ♀ TODAS
+                        </button>
+                    </div>
+                </div>
+
+                <div id="matches-container" class="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar"></div>
+            </section>
+
+            <!-- PANTALLA 3: SALA DE COORDINACIÓN (CHAT EFÍMERO) -->
+            <section id="screen-3" class="hidden flex-col h-full w-full overflow-hidden">
+                <div class="bg-sup-green text-sup-cream p-3 border-b-2 border-sup-green shrink-0 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <img id="chat-partner-avatar" src="" alt="Compañero"
+                                class="w-10 h-10 rounded-sm object-cover border-2 border-sup-cream shrink-0">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <h3 id="chat-partner-name"
+                                        class="font-display text-sm uppercase text-white truncate">VALERIA R.</h3>
+                                    <span id="chat-partner-uni"
+                                        class="bg-sup-cream text-sup-green text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-[2px] shrink-0">🎓
+                                        UTP</span>
+                                </div>
+                                <p id="chat-partner-meta" class="text-[10px] font-bold text-sup-cream/80 truncate">⭐ 4.9
+                                    • 98% PUNTUALIDAD</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button type="button" id="fast-forward-5m-btn"
+                                title="Simular paso de 5 min para habilitar No Apareció"
+                                class="bg-sup-greenLight hover:bg-sup-orange text-sup-cream border border-sup-cream/50 px-1.5 py-1 rounded-sm text-[8px] font-bold uppercase leading-tight">
+                                +5M<br>TEST
+                            </button>
+                            <div
+                                class="bg-sup-orange text-white border-2 border-sup-cream px-2.5 py-1 rounded-sm text-center">
+                                <span class="block text-[8px] font-bold uppercase leading-none">EXPIRA</span>
+                                <span id="match-timer" class="font-display text-xs">14:59</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-sup-cream text-sup-green text-[10px] font-bold px-2.5 py-1.5 rounded-sm border border-sup-green">
+                        🤝 ACUERDO LIBRE: Elijan una esquina iluminada y decidan quién pide el <strong>Uber o
+                            InDrive</strong>.
+                    </div>
+                </div>
+
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-3 space-y-2.5 no-scrollbar bg-sup-cream"></div>
+
+                <div id="typing-indicator"
+                    class="hidden px-3 py-1 bg-sup-cream text-[10px] font-bold uppercase text-sup-orange">
+                    <span id="typing-name">VALERIA ESTÁ ESCRIBIENDO...</span>
+                </div>
+
+                <div class="p-2.5 bg-sup-creamDark border-t-2 border-sup-green space-y-2 shrink-0">
+                    <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                        <button type="button" data-chat-chip="📍 ¿En qué esquina nos vemos?"
+                            class="btn-brutal-sm bg-white text-sup-green text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0">📍
+                            ¿Qué esquina?</button>
+                        <button type="button" data-chat-chip="📱 Yo pido el InDrive / Uber"
+                            class="btn-brutal-sm bg-white text-sup-green text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0">📱
+                            Yo pido Uber/InDrive</button>
+                        <button type="button" data-chat-chip="🏃 Llego en 3 min"
+                            class="btn-brutal-sm bg-white text-sup-green text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0">🏃
+                            Llego en 3 min</button>
+                        <button type="button" data-chat-chip="🧥 Tengo casaca negra / mochila"
+                            class="btn-brutal-sm bg-white text-sup-green text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0">🧥
+                            Casaca/Mochila</button>
+                    </div>
+
+                    <form id="chat-form" class="flex gap-1.5">
+                        <input type="text" id="chat-input" placeholder="Escribe un mensaje..."
+                            class="flex-1 bg-white border-2 border-sup-green rounded-sm px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none">
+                        <button type="submit"
+                            class="btn-brutal-sm bg-sup-green text-sup-cream px-3 py-1.5 rounded-sm font-bold text-xs uppercase">ENVIAR</button>
+                    </form>
+
+                    <div id="noshow-lock-hint"
+                        class="text-center text-[9px] font-bold uppercase text-sup-green/75 bg-white/70 border border-sup-green/30 rounded-[2px] py-1 px-2">
+                        ⏱️ Botón <span class="text-sup-orange">⚠️ NO APARECIÓ</span> se habilita tras 5 min de espera
+                        (<span id="noshow-countdown-text">05:00</span>)
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-1.5 pt-0.5">
+                        <button type="button" id="cancel-match-btn"
+                            class="btn-brutal-sm col-span-3 bg-white hover:bg-sup-cream text-sup-green font-bold text-[9px] uppercase py-2 rounded-sm">
+                            CANCELAR
+                        </button>
+                        <button type="button" id="noshow-btn" disabled
+                            class="btn-brutal-sm col-span-4 bg-sup-cream text-sup-green/40 font-bold text-[9px] uppercase py-2 rounded-sm cursor-not-allowed">
+                            ⚠️ NO APARECIÓ
+                        </button>
+                        <button type="button" id="confirm-meetup-btn"
+                            class="btn-brutal col-span-5 bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-[10px] uppercase py-2 rounded-sm">
+                            ¡YA NOS VIMOS!
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANTALLA 4: MODO VIAJE SEGURO Y COMPARTIR POR WHATSAPP -->
+            <section id="screen-4"
+                class="hidden flex-col h-full w-full overflow-y-auto no-scrollbar bg-sup-green text-sup-cream p-4 justify-between space-y-3">
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span
+                            class="bg-sup-orange text-white font-display text-[10px] uppercase px-2.5 py-1 rounded-sm border border-sup-cream">
+                            🛡️ MODO VIAJE ACTIVO
+                        </span>
+                        <span class="text-[10px] font-bold uppercase text-sup-cream/75">CHAT EFÍMERO CERRADO</span>
+                    </div>
+
+                    <h2 class="font-display text-2xl uppercase text-sup-orange leading-none">
+                        VIAJE EN CURSO
+                    </h2>
+                    <p id="trip-route-summary" class="text-xs font-bold uppercase text-sup-cream">
+                        UTP - AV. PARRA → CERRO COLORADO
+                    </p>
+
+                    <div
+                        class="bg-sup-cream text-sup-green border-2 border-sup-orange shadow-hard-orange p-3 rounded-md space-y-2">
+                        <div class="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider">
+                            <span class="bg-sup-green text-sup-cream px-1.5 py-0.5 rounded-[2px]">PUNTO A •
+                                SALIDA</span>
+                            <span class="text-sup-orange flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-sup-orange animate-ping"></span>
+                                EN RUTA
+                            </span>
+                            <span
+                                class="bg-sup-orange text-white px-1.5 py-0.5 rounded-[2px] border border-sup-green">PUNTO
+                                B • DESTINO</span>
+                        </div>
+
+                        <div class="relative h-10 flex items-center px-2">
+                            <div
+                                class="w-full h-1.5 bg-sup-creamDark border border-sup-green rounded-full relative overflow-hidden">
+                                <div class="w-full h-full road-track-line opacity-60"></div>
+                            </div>
+                            <div class="absolute left-1.5 w-4 h-4 rounded-full bg-sup-green border-2 border-sup-cream shadow-hard-sm flex items-center justify-center z-10"
+                                title="Punto A">
+                                <span class="text-[8px] font-display text-sup-cream">A</span>
+                            </div>
+                            <div class="taxi-loop-mover z-20 pointer-events-none">
+                                <div
+                                    class="bg-sup-orange text-white border-2 border-sup-green shadow-hard-sm px-2 py-1 rounded-md flex items-center gap-1">
+                                    <i class="fa-solid fa-taxi text-xs"></i>
+                                </div>
+                            </div>
+                            <div class="absolute right-1.5 w-4 h-4 rounded-full bg-sup-orange border-2 border-sup-green shadow-hard-sm flex items-center justify-center z-10"
+                                title="Punto B">
+                                <span class="text-[8px] font-display text-white">B</span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="flex items-center justify-between gap-2 text-[10px] font-bold uppercase pt-0.5 border-t border-sup-green/15">
+                            <span id="trip-point-a" class="truncate max-w-[44%] text-sup-green">UTP - AV. PARRA</span>
+                            <span class="text-sup-green/40">•••</span>
+                            <span id="trip-point-b" class="truncate max-w-[44%] text-right text-sup-orange">CERRO
+                                COLORADO</span>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-sup-cream text-sup-green border-2 border-sup-orange shadow-hard-orange p-3 rounded-md flex items-center gap-3">
+                        <img id="trip-partner-avatar" src="" alt="Compañero"
+                            class="w-12 h-12 rounded-sm object-cover border-2 border-sup-green shrink-0">
+                        <div class="min-w-0">
+                            <h3 id="trip-partner-name" class="font-display text-sm uppercase truncate">VALERIA R.</h3>
+                            <p id="trip-partner-uni" class="text-[10px] font-bold uppercase text-sup-orange">🎓
+                                ESTUDIANTE VERIFICADO UTP</p>
+                            <p id="trip-partner-stats" class="text-[10px] font-bold text-sup-green/80">⭐ 4.9 • 28 VIAJES
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-sup-greenLight border-2 border-sup-cream/40 p-3 rounded-md space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-[10px] font-bold uppercase text-sup-orange">RESPALDO PARA FAMILIAR /
+                                AMIGO</span>
+                            <button type="button" id="copy-wa-btn"
+                                class="text-[10px] font-bold uppercase underline text-sup-cream hover:text-sup-orange">
+                                COPIAR TEXTO
+                            </button>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <input type="url" id="trip-ride-link-input"
+                                placeholder="Pega aquí el link de tu Uber / InDrive (opcional)"
+                                class="flex-1 bg-sup-green text-sup-cream border border-sup-cream/50 rounded-sm px-2 py-1 text-[10px] font-medium placeholder-sup-cream/50 focus:outline-none focus:border-sup-orange">
+                            <button type="button" id="attach-trip-gps-btn" title="Adjuntar coordenadas GPS al reporte"
+                                class="btn-brutal-sm bg-sup-cream text-sup-green px-2 py-1 rounded-sm text-[9px] font-bold uppercase shrink-0">
+                                📍 +GPS
+                            </button>
+                        </div>
+                        <pre id="whatsapp-preview-text"
+                            class="whitespace-pre-wrap font-sans text-[11px] text-sup-cream/95 leading-snug"></pre>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-1">
+                    <div class="grid grid-cols-12 gap-2">
+                        <button type="button" id="sos-safety-btn"
+                            class="btn-brutal col-span-4 bg-sup-yellow hover:bg-white text-sup-green font-display text-[10px] uppercase py-3 rounded-md flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span>SOS 105</span>
+                        </button>
+                        <button type="button" id="share-wa-btn"
+                            class="btn-brutal col-span-8 bg-[#25D366] text-sup-green font-display text-xs uppercase py-3 rounded-md flex items-center justify-center gap-1.5">
+                            <i class="fa-brands fa-whatsapp text-base"></i>
+                            <span>ENVIAR WHATSAPP</span>
+                        </button>
+                    </div>
+                    <button type="button" id="finish-trip-btn"
+                        class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs uppercase py-3 rounded-md">
+                        ✓ LLEGUÉ BIEN • FINALIZAR VIAJE
+                    </button>
+                </div>
+            </section>
+
+            <!-- MODAL 5: EMERGENCIA / SOS AREQUIPA -->
+            <div id="sos-modal"
+                class="hidden absolute inset-0 z-[1200] bg-sup-green/90 backdrop-blur-[2px] flex items-center justify-center p-4">
+                <div
+                    class="bg-sup-cream border-[3px] border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop">
+                    <div class="px-4 py-2.5 bg-sup-orange text-white flex items-center justify-between">
+                        <span class="font-display text-xs uppercase tracking-wider">🚨 ASISTENCIA Y EMERGENCIA</span>
+                        <button type="button" id="close-sos-modal-btn"
+                            class="btn-brutal-sm bg-white text-sup-green w-7 h-7 rounded-md font-bold text-xs flex items-center justify-center">✕</button>
+                    </div>
+                    <div class="checkerboard-strip"></div>
+                    <div class="p-4 space-y-2.5 text-xs text-sup-green">
+                        <p class="font-bold uppercase text-[11px]">Acciones rápidas en Arequipa:</p>
+                        <a href="tel:105"
+                            class="btn-brutal w-full bg-sup-orange text-white font-display text-xs uppercase py-2.5 rounded-md flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-phone"></i>
+                            <span>LLAMAR POLICÍA NACIONAL (105)</span>
+                        </a>
+                        <a href="tel:106"
+                            class="btn-brutal-sm w-full bg-white text-sup-green font-bold text-xs uppercase py-2.5 rounded-md flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-kit-medical"></i>
+                            <span>SAMU EMERGENCIAS MÉDICAS (106)</span>
+                        </a>
+                        <button type="button" id="sos-share-wa-btn"
+                            class="btn-brutal w-full bg-[#25D366] text-sup-green font-display text-xs uppercase py-2.5 rounded-md flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-whatsapp text-sm"></i>
+                            <span>ENVIAR ALERTA SOS POR WHATSAPP</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+</body>
+
+</html>

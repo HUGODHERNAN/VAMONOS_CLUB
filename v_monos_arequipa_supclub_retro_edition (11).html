@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VÁMONOS Club | Taxi Compartido en Arequipa</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS & JS para Mapas Interactivos de Arequipa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts: Archivo Black (Display), Pacifico (Retro Script), Space Grotesk (Clean Uppercase UI) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Pacifico&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['"Archivo Black"', 'sans-serif'],
+                        script: ['"Pacifico"', 'cursive'],
+                        sans: ['"Space Grotesk"', 'sans-serif'],
+                    },
+                    colors: {
+                        sup: {
+                            cream: '#E7DEC8',
+                            creamDark: '#DCD0B4',
+                            green: '#063120',
+                            greenLight: '#0E4A32',
+                            orange: '#FA4A19',
+                            orangeHover: '#E03D0F',
+                            yellow: '#F5B82E',
+                            plum: '#6D287A',
+                        }
+                    },
+                    boxShadow: {
+                        'hard': '4px 4px 0px #063120',
+                        'hard-sm': '2px 2px 0px #063120',
+                        'hard-lg': '6px 6px 0px #063120',
+                        'hard-cream': '4px 4px 0px #E7DEC8',
+                        'hard-orange': '4px 4px 0px #FA4A19',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --sup-cream: #E7DEC8;
+            --sup-green: #063120;
+            --sup-orange: #FA4A19;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #063120;
+            background-image: radial-gradient(#0E4A32 1.25px, transparent 1.25px);
+            background-size: 22px 22px;
+            color: var(--sup-green);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Patrón de Ajedrez (Checkerboard) exacto estilo SUPClub */
+        .checkerboard-strip {
+            height: 12px;
+            width: 100%;
+            background-color: var(--sup-cream);
+            background-image: 
+                linear-gradient(45deg, var(--sup-green) 25%, transparent 25%), 
+                linear-gradient(-45deg, var(--sup-green) 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, var(--sup-green) 75%), 
+                linear-gradient(-45deg, transparent 75%, var(--sup-green) 75%);
+            background-size: 12px 12px;
+            background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+            border-top: 2px solid var(--sup-green);
+            border-bottom: 2px solid var(--sup-green);
+            transition: height 0.25s ease, background-size 0.25s ease;
+        }
+
+        /* Versión compacta de la cenefa cuando se entra al modo App para ganar espacio vertical */
+        .window-topbar.app-mode .checkerboard-strip {
+            height: 8px;
+            background-size: 8px 8px;
+            background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+            border-bottom-width: 1.5px;
+        }
+
+        /* Compresión inteligente del encabezado al entrar a las vistas del mapa */
+        .window-topbar.app-mode .topbar-inner {
+            padding: 0.45rem 0.65rem;
+            gap: 0.4rem;
+        }
+
+        .window-topbar.app-mode .window-dots {
+            display: none;
+        }
+
+        @media (min-width: 390px) {
+            .window-topbar.app-mode .window-dots {
+                display: flex;
+                gap: 0.25rem;
+            }
+            .window-topbar.app-mode .window-dots span {
+                width: 0.6rem;
+                height: 0.6rem;
+                border-width: 1.5px;
+            }
+        }
+
+        .window-topbar.app-mode .brand-wordmark {
+            font-size: 1.05rem;
+        }
+
+        .window-topbar.app-mode .brand-script {
+            font-size: 0.95rem;
+        }
+
+        /* Contenedor Principal Responsivo: Ancho para Landing Page, Compacto Mobile-First para la App */
+        .workspace-wrapper {
+            width: 100%;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            gap: 0.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .workspace-wrapper {
+                padding: 1.5rem;
+                gap: 1rem;
+            }
+        }
+
+        /* Barra Superior Estilo Ventana (Referencia ColorMatch + Estética SUPClub) */
+        .window-topbar {
+            width: 100%;
+            max-width: 820px;
+            background-color: var(--sup-cream);
+            border: 3px solid var(--sup-green);
+            border-radius: 10px;
+            box-shadow: 5px 5px 0px var(--sup-orange), 8px 8px 0px #02180F;
+            overflow: hidden;
+            transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .window-topbar.app-mode {
+            max-width: 430px;
+            border-radius: 12px 12px 0 0;
+            border-bottom: none;
+            box-shadow: 8px 8px 0px var(--sup-orange);
+        }
+
+        /* Marco Principal Landing Page */
+        .landing-shell {
+            width: 100%;
+            max-width: 820px;
+            background-color: var(--sup-cream);
+            border: 3px solid var(--sup-green);
+            border-radius: 12px;
+            box-shadow: 7px 7px 0px var(--sup-orange), 10px 10px 0px #02180F;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Carcasa Mobile-First para las 4 Pantallas de la App */
+        .app-shell {
+            width: 100%;
+            max-width: 430px;
+            height: 82dvh;
+            min-height: 620px;
+            max-height: 780px;
+            background-color: var(--sup-cream);
+            border: 3px solid var(--sup-green);
+            border-radius: 0 0 14px 14px;
+            box-shadow: 8px 8px 0px var(--sup-orange);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Botones Brutalistas Retro con estado activo presionado */
+        .btn-brutal {
+            border: 2.5px solid var(--sup-green);
+            box-shadow: 4px 4px 0px var(--sup-green);
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+        }
+        .btn-brutal:active {
+            transform: translate(3px, 3px);
+            box-shadow: 1px 1px 0px var(--sup-green);
+        }
+
+        .btn-brutal-sm {
+            border: 2px solid var(--sup-green);
+            box-shadow: 2px 2px 0px var(--sup-green);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .btn-brutal-sm:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px var(--sup-green);
+        }
+
+        /* Filtro cálido retro para armonizar OpenStreetMap con el fondo crema #E7DEC8 */
+        .retro-map-tiles .leaflet-tile-pane {
+            filter: sepia(26%) contrast(104%) saturate(85%) brightness(97%);
+        }
+        .leaflet-control-attribution {
+            font-size: 9px !important;
+            background: rgba(231, 222, 200, 0.9) !important;
+            color: #063120 !important;
+            border-top: 1px solid #063120;
+            border-left: 1px solid #063120;
+        }
+
+        /* Ocultar scrollbars */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Efecto Pegatina Die-Cut */
+        .sticker-badge {
+            border: 2.5px solid #FFFFFF;
+            outline: 2px solid var(--sup-green);
+            box-shadow: 3px 3px 0px var(--sup-green);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.95) translateY(8px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Animación en bucle del carrito avanzando en línea recta de Punto A a Punto B */
+        @keyframes taxiDriveLoop {
+            0% {
+                left: 6%;
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            10% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            88% {
+                left: 94%;
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                left: 94%;
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+        }
+
+        @keyframes roadDashFlow {
+            0% { background-position: 0 0; }
+            100% { background-position: -24px 0; }
+        }
+
+        .taxi-loop-mover {
+            position: absolute;
+            top: 50%;
+            left: 6%;
+            animation: taxiDriveLoop 4.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+        }
+
+        .road-track-line {
+            background-image: repeating-linear-gradient(
+                to right,
+                #063120 0px,
+                #063120 10px,
+                transparent 10px,
+                transparent 18px
+            );
+            animation: roadDashFlow 1.2s linear infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="workspace-wrapper">
+
+        <!-- ===================================================================== -->
+        <!-- BARRA SUPERIOR ESTILO VENTANA (3 PUNTOS + TÍTULO VÁMONOS CLUB)         -->
+        <!-- ===================================================================== -->
+        <header id="global-topbar" class="window-topbar shrink-0">
+            <div class="px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between gap-2">
+                <!-- Izquierda: 3 Puntos de Ventana + Logo Script/Retro -->
+                <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <div class="flex items-center gap-1 sm:gap-1.5" aria-hidden="true">
+                        <span class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-sup-orange border-2 border-sup-green"></span>
+                        <span class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-sup-yellow border-2 border-sup-green"></span>
+                        <span class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-[#1E7A50] border-2 border-sup-green"></span>
+                    </div>
+                    <button onclick="returnToLanding()" class="flex items-baseline gap-1 text-left focus:outline-none group" title="Volver al inicio">
+                        <span class="font-display text-lg sm:text-2xl tracking-tight text-sup-green uppercase group-hover:text-sup-orange transition-colors">Vámonos</span>
+                        <span class="font-script text-base sm:text-xl text-sup-orange -rotate-3 transform inline-block">Club</span>
+                    </button>
+                </div>
+
+                <!-- Derecha: Botón Único "Perfil" (Abre la vista superpuesta con datos y botón Salir) -->
+                <div id="active-user-controls" class="hidden items-center justify-end min-w-0">
+                    <button onclick="openProfileModal()" class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-bold uppercase tracking-tight transition-colors group">
+                        <span id="header-avatar-initials" class="w-5 h-5 rounded-full bg-sup-green text-sup-cream group-hover:bg-white group-hover:text-sup-green text-[9px] font-display flex items-center justify-center shrink-0">
+                            HH
+                        </span>
+                        <span class="tracking-wider">PERFIL</span>
+                        <i class="fa-solid fa-chevron-down text-[9px] opacity-75"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Cenefa de Ajedrez SUPClub -->
+            <div class="checkerboard-strip"></div>
+        </header>
+
+        <!-- NOTIFICACIÓN TOAST GLOBAL (SIN ALERT) -->
+        <div id="toast-banner" class="hidden fixed top-5 left-1/2 -translate-x-1/2 z-[100] bg-sup-green text-sup-cream border-2 border-sup-orange shadow-hard-orange px-4 py-2.5 rounded-md flex items-center gap-2.5 text-xs font-bold uppercase tracking-wide max-w-[92vw]">
+            <i id="toast-icon" class="fa-solid fa-bolt text-sup-orange text-sm"></i>
+            <span id="toast-message">AVISO DEL SISTEMA</span>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- PANTALLA 0: LANDING PAGE CENTRAL (OPTIMIZADA ABOVE THE FOLD EN MÓVIL) -->
+        <!-- ===================================================================== -->
+        <section id="screen-0" class="landing-shell px-4 py-4 sm:px-10 sm:py-8 flex flex-col items-center text-center animate-pop">
+            
+            <!-- 1. Píldora Superior de Contexto -->
+            <div class="inline-flex items-center gap-1.5 bg-white border-2 border-sup-green shadow-hard-sm px-3 py-1 rounded-full mb-2 sm:mb-3">
+                <span class="w-2 h-2 rounded-full bg-sup-orange animate-pulse"></span>
+                <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-sup-green">
+                    RADAR EN VIVO • CORREDORES DE AREQUIPA
+                </span>
+            </div>
+
+            <!-- 2. Logo Central Die-Cut Emblem (Compacto en móvil para visibilidad inmediata del CTA) -->
+            <div class="my-0.5 sm:my-1.5 relative group select-none">
+                <svg viewBox="0 0 220 112" class="w-32 sm:w-48 h-auto drop-shadow-[3px_3px_0px_#063120] sm:drop-shadow-[4px_4px_0px_#063120] transform -rotate-2 group-hover:rotate-0 transition-transform duration-200" aria-label="Logo Vámonos Club Arequipa">
+                    <!-- Contorno blanco estilo sticker die-cut -->
+                    <rect x="8" y="10" width="204" height="90" rx="18" fill="#FFFFFF" stroke="#063120" stroke-width="4"/>
+                    <!-- Fondo interior verde bosque -->
+                    <rect x="14" y="16" width="192" height="78" rx="13" fill="#063120"/>
+                    <!-- Franja superior ajedrez naranja/crema -->
+                    <path d="M22 24 H198 V32 H22 Z" fill="#FA4A19"/>
+                    <rect x="22" y="24" width="11" height="8" fill="#E7DEC8"/>
+                    <rect x="44" y="24" width="11" height="8" fill="#E7DEC8"/>
+                    <rect x="66" y="24" width="11" height="8" fill="#E7DEC8"/>
+                    <rect x="88" y="24" width="11" height="8" fill="#E7DEC8"/>
+                    <rect x="110" y="24" width="11" height="8" fill="#E7DEC8"/>
+                    <rect x="132" y="24" width="11" height="8" fill="#E7DEC8"/>
+                    <rect x="154" y="24" width="11" height="8" fill="#E7DEC8"/>
+                    <rect x="176" y="24" width="11" height="8" fill="#E7DEC8"/>
+
+                    <!-- Ícono izquierdo: Pin de ruta compartido -->
+                    <circle cx="43" cy="60" r="16" fill="#FA4A19" stroke="#E7DEC8" stroke-width="2.5"/>
+                    <path d="M43 50 C38.5 50 35 53.5 35 58 C35 63.5 43 70 43 70 C43 70 51 63.5 51 58 C51 53.5 47.5 50 43 50 Z" fill="#E7DEC8"/>
+                    <circle cx="43" cy="58" r="3" fill="#063120"/>
+
+                    <!-- Texto Central Emblemático -->
+                    <text x="128" y="61" text-anchor="middle" fill="#E7DEC8" font-family="'Archivo Black', sans-serif" font-size="22" letter-spacing="-0.5">VÁMONOS</text>
+                    <text x="128" y="81" text-anchor="middle" fill="#FA4A19" font-family="'Pacifico', cursive" font-size="18">Arequipa Club</text>
+                </svg>
+            </div>
+
+            <!-- 3. Subtítulo en Mayúsculas + Titular Gigante -->
+            <p class="text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] text-sup-green/75 mt-1">
+                ESTUDIANTES Y VECINOS VERIFICADOS • SIN COMISIONES
+            </p>
+
+            <h1 class="font-display text-2xl sm:text-5xl text-sup-green leading-[1.02] tracking-tight mt-1 max-w-xl">
+                Comparte taxi seguro en <span class="text-sup-orange">Arequipa.</span>
+            </h1>
+
+            <p class="text-[11px] sm:text-sm font-medium text-sup-green/85 max-w-lg mt-1.5 sm:mt-2.5 leading-snug sm:leading-relaxed">
+                Conecta en tiempo real con compañeros que salen de tu zona (<strong>UTP, UNSA, UCSM, Malls</strong>), coordinen en el chat y dividan un <strong>Uber o InDrive</strong>.
+            </p>
+
+            <!-- 4. Bloque de Ingreso / Registro Rápido -->
+            <div class="w-full max-w-md mt-3 sm:mt-5 space-y-2 sm:space-y-2.5">
+                
+                <!-- Selector de Modo: Ingresar vs Registrarme -->
+                <div class="flex items-center justify-center gap-2">
+                    <button type="button" id="tab-login-btn" onclick="switchAuthMode('login')" class="px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border-2 border-sup-green bg-sup-green text-sup-cream transition-colors">
+                        1. Ingreso Rápido
+                    </button>
+                    <button type="button" id="tab-register-btn" onclick="switchAuthMode('register')" class="px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border-2 border-sup-green bg-white text-sup-green hover:bg-sup-creamDark transition-colors">
+                        2. Registrarme 🎓
+                    </button>
+                </div>
+
+                <!-- MODO A: INGRESO RÁPIDO (Input estilo píldora central + Detección en vivo si escribe correo) -->
+                <div id="auth-login-box" class="space-y-1.5">
+                    <div>
+                        <label for="landing-user-input" class="block text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-sup-green mb-1">
+                            INGRESA TU USUARIO O CORREO INSTITUCIONAL
+                        </label>
+                        <input 
+                            type="text" 
+                            id="landing-user-input" 
+                            value="Hugo H."
+                            oninput="handleLiveDomainCheck('landing-user-input', 'login-domain-feedback')"
+                            placeholder="ej. Hugo H. o u21310779@utp.edu.pe" 
+                            class="w-full bg-white border-2 border-sup-green shadow-hard-sm rounded-full px-4 py-2 sm:px-5 sm:py-2.5 text-center text-xs sm:text-sm font-bold text-sup-green placeholder-sup-green/45 focus:outline-none focus:ring-2 focus:ring-sup-orange"
+                        >
+                        <!-- Badge Dinámico de Dominio Detectado en Ingreso Rápido -->
+                        <div id="login-domain-feedback" class="hidden mt-1.5 flex justify-center"></div>
+                    </div>
+                </div>
+
+                <!-- MODO B: REGISTRO RÁPIDO CON DETECCIÓN DE DOMINIO UNIVERSITARIO EN VIVO -->
+                <div id="auth-register-box" class="hidden bg-white border-2 border-sup-green shadow-hard-sm rounded-2xl p-3 sm:p-3.5 text-left space-y-2 animate-pop">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">TU NOMBRE CORTO *</label>
+                            <input type="text" id="reg-name" placeholder="Ej. Camila S." class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">GÉNERO (FILTRO SEGURIDAD) *</label>
+                            <select id="reg-gender" class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
+                                <option value="F">Femenino (Habilita Solo Mujeres)</option>
+                                <option value="M">Masculino</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-bold uppercase tracking-wider text-sup-green mb-0.5">CORREO UNIVERSITARIO (INSIGNIA 🎓 AUTOMÁTICA)</label>
+                        <input 
+                            type="email" 
+                            id="reg-email" 
+                            oninput="handleLiveDomainCheck('reg-email', 'reg-domain-feedback')"
+                            placeholder="codigo@utp.edu.pe / @unsa.edu.pe / @ucsm.edu.pe" 
+                            class="w-full bg-sup-cream border-2 border-sup-green rounded-lg px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white"
+                        >
+                        <!-- Badge Verde Instantáneo de Dominio Universitario -->
+                        <div id="reg-domain-feedback" class="hidden mt-1.5"></div>
+                    </div>
+                </div>
+
+                <!-- Dos Botones Principales lado a lado -->
+                <div class="grid grid-cols-2 gap-2 pt-0.5">
+                    <button type="button" onclick="enterAppFromLanding()" class="btn-brutal bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs sm:text-sm uppercase tracking-wide py-2.5 sm:py-3 px-3 sm:px-5 rounded-full flex items-center justify-center gap-1.5">
+                        <span id="primary-cta-label">Entrar al Mapa</span>
+                        <span>→</span>
+                    </button>
+                    <button type="button" id="secondary-cta-btn" onclick="toggleRegisterFromButton()" class="btn-brutal bg-white hover:bg-sup-creamDark text-sup-green font-bold text-xs sm:text-sm uppercase tracking-wide py-2.5 sm:py-3 px-3 sm:px-5 rounded-full flex items-center justify-center gap-1.5">
+                        <span id="secondary-cta-label">Crear Cuenta 🎓</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 5. Línea Divisoria + 3 Cuadritos Informativos Inferiores -->
+            <div class="w-full max-w-2xl border-t-2 border-sup-green/20 mt-4 sm:mt-6 pt-3 sm:pt-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <!-- Cuadro 1 -->
+                    <div class="bg-white border-2 border-sup-green shadow-hard-sm rounded-xl sm:rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 flex items-center gap-2 text-left">
+                        <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-sup-orange border-2 border-sup-green shrink-0"></span>
+                        <span class="text-[10px] sm:text-[11px] font-bold text-sup-green leading-tight">
+                            🎓 Estudiantes Verificados (UTP, UNSA, UCSM)
+                        </span>
+                    </div>
+
+                    <!-- Cuadro 2 -->
+                    <div class="bg-white border-2 border-sup-green shadow-hard-sm rounded-xl sm:rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 flex items-center gap-2 text-left">
+                        <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-sup-yellow border-2 border-sup-green shrink-0"></span>
+                        <span class="text-[10px] sm:text-[11px] font-bold text-sup-green leading-tight">
+                            📍 Radio Privado 250m + Filtro Solo Mujeres
+                        </span>
+                    </div>
+
+                    <!-- Cuadro 3 -->
+                    <div class="bg-white border-2 border-sup-green shadow-hard-sm rounded-xl sm:rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 flex items-center gap-2 text-left">
+                        <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#1E7A50] border-2 border-sup-green shrink-0"></span>
+                        <span class="text-[10px] sm:text-[11px] font-bold text-sup-green leading-tight">
+                            🚕 Uber / InDrive • Divide la tarifa
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- CONTENEDOR DE LA APLICACIÓN INTERACTIVA (PANTALLAS 1 A 4)             -->
+        <!-- ===================================================================== -->
+        <div class="app-shell hidden" id="app-container">
+
+            <!-- ================================================================= -->
+            <!-- MODAL 1: VISTA SUPERPUESTA DE PERFIL, CREDENCIALES Y SALIR        -->
+            <!-- ================================================================= -->
+            <div id="profile-modal" onclick="if(event.target === this) closeProfileModal()" class="hidden absolute inset-0 z-50 bg-sup-green/80 backdrop-blur-xs flex items-center justify-center p-3.5 sm:p-4">
+                <div class="bg-sup-cream border-3 border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop">
+                    <!-- Barra superior del modal -->
+                    <div class="px-4 py-2.5 bg-sup-cream flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-sup-green"></span>
+                            <span class="font-display text-xs uppercase tracking-wider text-sup-green">MI PERFIL • VÁMONOS CLUB</span>
+                        </div>
+                        <button onclick="closeProfileModal()" class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white text-sup-green w-7 h-7 rounded-md font-bold text-xs flex items-center justify-center" aria-label="Cerrar perfil">✕</button>
+                    </div>
+                    <div class="checkerboard-strip"></div>
+
+                    <div class="p-4 space-y-3.5 max-h-[75dvh] overflow-y-auto no-scrollbar">
+                        <!-- Cabecera de Identidad con Avatar y Check Verificado -->
+                        <div class="bg-sup-green text-sup-cream p-3.5 rounded-lg border-2 border-sup-green shadow-hard-sm space-y-3">
+                            <div class="flex items-center gap-3">
+                                <div class="relative shrink-0">
+                                    <div id="modal-avatar-initials" class="w-13 h-13 w-12 h-12 rounded-lg bg-sup-orange text-white font-display text-lg flex items-center justify-center border-2 border-sup-cream">
+                                        HH
+                                    </div>
+                                    <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1E7A50] text-white border-2 border-sup-green flex items-center justify-center text-[9px]" title="Identidad Verificada">
+                                        <i class="fa-solid fa-check"></i>
+                                    </span>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 id="modal-user-name" class="font-display text-base uppercase text-white truncate">HUGO H.</h3>
+                                    <span id="modal-user-badge" class="inline-block bg-sup-cream text-sup-green text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm mt-1">
+                                        🎓 ESTUDIANTE VERIFICADO • UTP
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Métricas de Confianza -->
+                            <div class="grid grid-cols-3 gap-2 pt-2.5 border-t border-sup-cream/20 text-center">
+                                <div>
+                                    <span class="block font-display text-sm text-sup-orange">⭐ 5.0</span>
+                                    <span class="text-[9px] font-bold uppercase text-sup-cream/80">PUNTAJE</span>
+                                </div>
+                                <div>
+                                    <span class="block font-display text-sm text-white">100%</span>
+                                    <span class="text-[9px] font-bold uppercase text-sup-cream/80">PUNTUALIDAD</span>
+                                </div>
+                                <div>
+                                    <span class="block font-display text-sm text-white">19</span>
+                                    <span class="text-[9px] font-bold uppercase text-sup-cream/80">VIAJES</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cuadrícula de Datos de la Cuenta -->
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-white border-2 border-sup-green rounded-md p-2.5">
+                                <span class="block text-[9px] font-bold uppercase tracking-wider text-sup-green/65">GÉNERO REGISTRADO</span>
+                                <span id="modal-user-gender" class="block text-xs font-bold uppercase text-sup-green mt-0.5">MASCULINO</span>
+                            </div>
+                            <div class="bg-white border-2 border-sup-green rounded-md p-2.5 min-w-0">
+                                <span class="block text-[9px] font-bold uppercase tracking-wider text-sup-green/65">CORREO INSTITUCIONAL</span>
+                                <span id="modal-user-email" class="block text-xs font-bold text-sup-green truncate mt-0.5">NO VINCULADO</span>
+                            </div>
+                        </div>
+
+                        <!-- Vinculación Rápida de Correo Universitario -->
+                        <div class="bg-white border-2 border-sup-green p-3 rounded-md space-y-2">
+                            <p class="text-[10px] font-bold uppercase tracking-wide text-sup-green">VINCULAR O ACTUALIZAR CORREO UNIVERSITARIO:</p>
+                            <div class="flex flex-wrap gap-1">
+                                <span class="text-[9px] font-bold bg-sup-cream border border-sup-green px-1.5 py-0.5 rounded-xs">@utp.edu.pe</span>
+                                <span class="text-[9px] font-bold bg-sup-cream border border-sup-green px-1.5 py-0.5 rounded-xs">@unsa.edu.pe</span>
+                                <span class="text-[9px] font-bold bg-sup-cream border border-sup-green px-1.5 py-0.5 rounded-xs">@ucsm.edu.pe</span>
+                                <span class="text-[9px] font-bold bg-sup-cream border border-sup-green px-1.5 py-0.5 rounded-xs">@ucsp.edu.pe</span>
+                            </div>
+                            <div class="flex gap-1.5 pt-0.5">
+                                <input type="email" id="demo-uni-email" placeholder="codigo@unsa.edu.pe" class="flex-1 bg-sup-cream border-2 border-sup-green rounded-sm px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none focus:bg-white">
+                                <button onclick="simulateUniVerification()" class="btn-brutal-sm bg-sup-green text-sup-cream hover:bg-sup-orange hover:text-white text-[10px] font-bold uppercase px-3 py-1.5 rounded-sm">VINCULAR</button>
+                            </div>
+                        </div>
+
+                        <!-- Botón Prominente de Cerrar Sesión / Salir dentro del Perfil -->
+                        <div class="pt-1 border-t-2 border-sup-green/20">
+                            <button onclick="logoutFromProfileModal()" class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs uppercase tracking-wider py-3 rounded-md flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                <span>CERRAR SESIÓN / SALIR</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- MODAL 2: ENCUESTA POST-VIAJE (ESTRELLAS 1 A 5 + COMENTARIOS)      -->
+            <!-- ================================================================= -->
+            <div id="rating-modal" class="hidden absolute inset-0 z-50 bg-sup-green/85 backdrop-blur-xs flex items-center justify-center p-3.5 sm:p-4">
+                <div class="bg-sup-cream border-3 border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop">
+                    <!-- Barra superior del modal -->
+                    <div class="px-4 py-2.5 bg-sup-green text-sup-cream flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-sup-cream animate-ping"></span>
+                            <span class="font-display text-xs uppercase tracking-wider text-sup-orange">ENCUESTA OBLIGATORIA</span>
+                        </div>
+                        <span class="text-[9px] font-bold uppercase bg-sup-orange/20 border border-sup-orange text-sup-cream px-1.5 py-0.5 rounded-xs">REGLA DE CONFIANZA</span>
+                    </div>
+                    <div class="checkerboard-strip"></div>
+
+                    <div class="p-4 space-y-3.5">
+                        <!-- Aviso de bloqueo por encuesta pendiente -->
+                        <div id="pending-survey-alert" class="hidden bg-sup-yellow/25 border-2 border-sup-green rounded-md px-2.5 py-1.5 text-[10px] font-bold text-sup-green leading-snug">
+                            ⚠️ TIENES UN VIAJE ANTERIOR SIN CALIFICAR. Completa esta encuesta para desbloquear nuevas rutas.
+                        </div>
+
+                        <!-- Compañero a calificar -->
+                        <div class="flex items-center gap-3 bg-white border-2 border-sup-green shadow-hard-sm p-2.5 rounded-lg">
+                            <img id="rating-partner-avatar" src="" alt="Compañero" class="w-12 h-12 rounded-md object-cover border-2 border-sup-green shrink-0">
+                            <div class="min-w-0 flex-1">
+                                <span class="block text-[9px] font-bold uppercase tracking-wider text-sup-green/65">¿CÓMO FUE VIAJAR CON</span>
+                                <h3 id="rating-partner-name" class="font-display text-base uppercase text-sup-green truncate">VALERIA R.</h3>
+                                <span id="rating-partner-uni" class="inline-block bg-sup-cream border border-sup-green text-sup-green text-[9px] font-bold uppercase px-1.5 py-0.2 rounded-xs mt-0.5">🎓 UTP VERIFICADO</span>
+                            </div>
+                        </div>
+
+                        <!-- Selector Interactivo de 1 a 5 Estrellas -->
+                        <div class="bg-white border-2 border-sup-green rounded-lg p-3 text-center space-y-1.5">
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-sup-green">CALIFICA TU EXPERIENCIA (1 A 5)</span>
+                            <div id="star-rating-group" class="flex items-center justify-center gap-2 py-1">
+                                <button type="button" onclick="setRatingStars(1)" data-star="1" class="star-btn w-10 h-10 rounded-md border-2 border-sup-green bg-sup-orange text-white font-display text-base shadow-hard-sm transition-transform active:translate-y-0.5" aria-label="1 estrella">
+                                    <i class="fa-solid fa-star"></i>
+                                </button>
+                                <button type="button" onclick="setRatingStars(2)" data-star="2" class="star-btn w-10 h-10 rounded-md border-2 border-sup-green bg-sup-orange text-white font-display text-base shadow-hard-sm transition-transform active:translate-y-0.5" aria-label="2 estrellas">
+                                    <i class="fa-solid fa-star"></i>
+                                </button>
+                                <button type="button" onclick="setRatingStars(3)" data-star="3" class="star-btn w-10 h-10 rounded-md border-2 border-sup-green bg-sup-orange text-white font-display text-base shadow-hard-sm transition-transform active:translate-y-0.5" aria-label="3 estrellas">
+                                    <i class="fa-solid fa-star"></i>
+                                </button>
+                                <button type="button" onclick="setRatingStars(4)" data-star="4" class="star-btn w-10 h-10 rounded-md border-2 border-sup-green bg-sup-orange text-white font-display text-base shadow-hard-sm transition-transform active:translate-y-0.5" aria-label="4 estrellas">
+                                    <i class="fa-solid fa-star"></i>
+                                </button>
+                                <button type="button" onclick="setRatingStars(5)" data-star="5" class="star-btn w-10 h-10 rounded-md border-2 border-sup-green bg-sup-orange text-white font-display text-base shadow-hard-sm transition-transform active:translate-y-0.5" aria-label="5 estrellas">
+                                    <i class="fa-solid fa-star"></i>
+                                </button>
+                            </div>
+                            <span id="rating-star-label" class="inline-block bg-sup-green text-sup-cream text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full">
+                                ⭐⭐⭐⭐⭐ ¡EXCELENTE COMPAÑERO!
+                            </span>
+                        </div>
+
+                        <!-- Etiquetas Rápidas Opcionales -->
+                        <div class="flex flex-wrap gap-1.5 justify-center">
+                            <button type="button" onclick="appendQuickReviewTag('Puntual en el punto')" class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green text-[10px] font-bold px-2 py-1 rounded-full">⏱️ Puntual</button>
+                            <button type="button" onclick="appendQuickReviewTag('Yapeó rápido su parte')" class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green text-[10px] font-bold px-2 py-1 rounded-full">💸 Yapeó al toque</button>
+                            <button type="button" onclick="appendQuickReviewTag('Buena onda y seguro')" class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green text-[10px] font-bold px-2 py-1 rounded-full">🛡️ Súper seguro</button>
+                        </div>
+
+                        <!-- Caja de Comentarios sobre el Compañero -->
+                        <div>
+                            <label for="rating-comment-input" class="block text-[10px] font-bold uppercase tracking-wider text-sup-green mb-1">
+                                COMENTARIOS SOBRE TU COMPAÑERO DE VIAJE
+                            </label>
+                            <textarea 
+                                id="rating-comment-input" 
+                                rows="2" 
+                                placeholder="Ej. Muy puntual en la esquina de Av. Parra y dividimos el InDrive sin problemas..." 
+                                class="w-full bg-white border-2 border-sup-green shadow-hard-sm rounded-lg p-2.5 text-xs font-medium text-sup-green placeholder-sup-green/45 focus:outline-none focus:ring-2 focus:ring-sup-orange resize-none"
+                            ></textarea>
+                        </div>
+
+                        <!-- Botón Finalizar y Volver a Elegir Destino -->
+                        <button type="button" onclick="submitTripSurvey()" class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs uppercase tracking-wider py-3 rounded-md flex items-center justify-center gap-2">
+                            <span>ENVIAR CALIFICACIÓN Y NUEVO VIAJE</span>
+                            <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- MODAL 3: SOLICITUD ENVIADA (ESPERANDO CONFIRMACIÓN MUTUA - 60S)   -->
+            <!-- ================================================================= -->
+            <div id="request-pending-modal" class="hidden absolute inset-0 z-50 bg-sup-green/85 backdrop-blur-xs flex items-center justify-center p-3.5 sm:p-4">
+                <div class="bg-sup-cream border-3 border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop">
+                    <div class="px-4 py-2.5 bg-sup-green text-sup-cream flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-sup-cream animate-ping"></span>
+                            <span class="font-display text-xs uppercase tracking-wider text-sup-orange">SOLICITUD ENVIADA</span>
+                        </div>
+                        <span id="request-countdown-badge" class="bg-sup-orange text-white font-display text-xs px-2 py-0.5 rounded-sm border border-sup-cream">60s</span>
+                    </div>
+                    <div class="checkerboard-strip"></div>
+
+                    <div class="p-4 space-y-3.5 text-center">
+                        <!-- Avatar y Notificación Push Enviada -->
+                        <div class="flex flex-col items-center space-y-2">
+                            <div class="relative">
+                                <img id="req-partner-avatar" src="" alt="Compañero" class="w-16 h-16 rounded-xl object-cover border-3 border-sup-green shadow-hard-sm">
+                                <span class="absolute -top-2 -right-2 bg-sup-orange text-white border-2 border-sup-green rounded-full w-7 h-7 flex items-center justify-center text-xs shadow-hard-sm animate-bounce">
+                                    <i class="fa-solid fa-bell"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-widest text-sup-green/70">NOTIFICACIÓN ENVIADA A</span>
+                                <h3 id="req-partner-name" class="font-display text-lg uppercase text-sup-green leading-tight">VALERIA R.</h3>
+                                <span id="req-partner-uni" class="inline-block bg-white border border-sup-green text-sup-green text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm mt-1">
+                                    🎓 UTP VERIFICADO
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Vista previa de la alerta push que recibe el otro usuario -->
+                        <div class="bg-sup-green text-sup-cream border-2 border-sup-green shadow-hard-sm rounded-lg p-3 text-left space-y-1">
+                            <div class="flex items-center justify-between text-[9px] font-bold uppercase text-sup-orange">
+                                <span>📲 ALERTA EN CELULAR DE DESTINO</span>
+                                <span>AHORA</span>
+                            </div>
+                            <p id="req-push-preview" class="text-[11px] font-medium text-sup-cream/95 leading-snug">
+                                "Hugo H. (🎓 UTP) quiere compartir taxi contigo hacia Cerro Colorado. Toca para aceptar."
+                            </p>
+                        </div>
+
+                        <!-- Barra de progreso de 60 segundos -->
+                        <div class="space-y-1">
+                            <div class="w-full h-2.5 bg-white border-2 border-sup-green rounded-full overflow-hidden">
+                                <div id="req-progress-bar" class="h-full bg-sup-orange transition-all duration-1000 ease-linear" style="width: 100%;"></div>
+                            </div>
+                            <p class="text-[10px] font-bold uppercase text-sup-green/75">
+                                Esperando que acepte para abrir la sala de chat...
+                            </p>
+                        </div>
+
+                        <!-- Botones de Cancelar o Simular Aceptación Inmediata -->
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button type="button" onclick="cancelPendingRequest()" class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green font-bold text-[10px] uppercase py-2.5 rounded-md">
+                                CANCELAR SOLICITUD
+                            </button>
+                            <button type="button" onclick="confirmPartnerAcceptedMatch()" class="btn-brutal bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-[10px] uppercase py-2.5 rounded-md">
+                                ⚡ SIMULAR ACEPTACIÓN
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- PANTALLA 1: MAPA DE AREQUIPA Y BUSCADOR DE RUTA                   -->
+            <!-- ================================================================= -->
+            <section id="screen-1" class="hidden flex-col h-full w-full overflow-hidden">
+                <!-- Barras superiores de Origen y Destino -->
+                <div class="p-3 bg-sup-cream border-b-2 border-sup-green space-y-2 shrink-0 z-10">
+                    <div class="grid grid-cols-1 gap-1.5">
+                        <div class="flex items-center gap-2 bg-white border-2 border-sup-green shadow-hard-sm rounded-md px-2.5 py-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-sup-green shrink-0"></span>
+                            <label for="origin-select" class="text-[9px] font-bold uppercase text-sup-green/70 shrink-0">SALIDA:</label>
+                            <select id="origin-select" onchange="updateMapRoute()" class="w-full bg-transparent text-xs font-bold uppercase text-sup-green focus:outline-none truncate">
+                                <optgroup label="🎓 UNIVERSIDADES E INSTITUTOS">
+                                    <option value="utp">UTP - AV. PARRA</option>
+                                    <option value="unsa_soc">UNSA SOCIALES / BIOMÉDICAS (AV. VENEZUELA)</option>
+                                    <option value="unsa_ing">UNSA INGENIERÍAS (AV. INDEPENDENCIA)</option>
+                                    <option value="ucsm">UCSM - UMACOLLO</option>
+                                    <option value="ucsp">UCSP - CAMPOS DE QUINTA GAMERO / URB. CAMPESTRE</option>
+                                    <option value="tecsup">TECSUP / SENATI - PARQUE INDUSTRIAL</option>
+                                </optgroup>
+                                <optgroup label="🛍️ MALLS Y CENTROS COMERCIALES">
+                                    <option value="mall">MALL AVENTURA PORONGOCHE</option>
+                                    <option value="realplaza">REAL PLAZA CAYMA</option>
+                                    <option value="mallplaza">MALLPLAZA CAYMA (AV. EJÉRCITO)</option>
+                                    <option value="lambramani">PARQUE LAMBRAMANI</option>
+                                </optgroup>
+                                <optgroup label="📍 NODOS CÉNTRICOS Y TRANSPORTE">
+                                    <option value="plaza_armas">PLAZA DE ARMAS / CERCADO (CALLE MERCADERES)</option>
+                                    <option value="ovalo">ÓVALO QUIÑONES - YANAHUARA</option>
+                                    <option value="terminal">TERMINAL TERRESTRE / TERRAPUERTO</option>
+                                    <option value="avelino">ÓVALO AV. ANDRÉS AVELINO CÁCERES</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white border-2 border-sup-green shadow-hard-sm rounded-md px-2.5 py-1.5">
+                            <span class="w-2.5 h-2.5 rounded-sm bg-sup-green shrink-0"></span>
+                            <label for="dest-select" class="text-[9px] font-bold uppercase text-sup-green/70 shrink-0">DESTINO:</label>
+                            <select id="dest-select" onchange="updateMapRoute()" class="w-full bg-transparent text-xs font-bold uppercase text-sup-green focus:outline-none truncate">
+                                <optgroup label="🏘️ CONO NORTE Y CAYMA">
+                                    <option value="cerro_colorado">CERRO COLORADO (AV. AVIACIÓN / ZAMÁCOLA)</option>
+                                    <option value="cono_norte">CONO NORTE / CIUDAD MUNICIPAL</option>
+                                    <option value="cayma">CAYMA (PLAZA / AV. BOLOGNESI / TOMILLA)</option>
+                                    <option value="yanahuara">YANAHUARA (MIRADOR / AV. EMMEL)</option>
+                                </optgroup>
+                                <optgroup label="⛰️ ZONA NORESTE (ASA / MIRAFLORES)">
+                                    <option value="asa">ALTO SELVA ALEGRE (AV. OBRERA / ROOSEVELT)</option>
+                                    <option value="miraflores">MIRAFLORES (PLAZA MAYTA CÁPAC / SAN MARTÍN)</option>
+                                    <option value="mariano_melgar">MARIANO MELGAR (AV. JESÚS / SEPÚLVEDA)</option>
+                                </optgroup>
+                                <optgroup label="🏙️ ZONA SUR Y ESTE">
+                                    <option value="jlbyr">JLBYR (AV. DOLORES / BUSTAMANTE)</option>
+                                    <option value="paucarpata">PAUCARPATA (AV. KENNEDY / MIGUEL GRAU)</option>
+                                    <option value="socabaya">SOCABAYA (LARA / HORACIO ZEBALLOS)</option>
+                                    <option value="hunter">HUNTER (AV. VIÑA DEL MAR / BELLAVISTA)</option>
+                                    <option value="sachaca">SACHACA / TIABAYA (AV. FERNANDINI)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mapa Interactivo de Arequipa con Radio de Privacidad 250m -->
+                <div class="relative flex-1 w-full min-h-[210px] retro-map-tiles overflow-hidden">
+                    <div id="map-screen-1" class="w-full h-full"></div>
+                    <div class="absolute top-2.5 left-2.5 z-[400] bg-sup-green text-sup-cream border-2 border-sup-orange shadow-hard-sm px-2.5 py-1 rounded-sm flex items-center gap-1.5 text-[10px] font-bold uppercase">
+                        <span class="w-2 h-2 rounded-full bg-sup-orange animate-ping"></span>
+                        <span>RADIO PRIVADO 250M ACTIVO</span>
+                    </div>
+                </div>
+
+                <!-- Panel Inferior de Preferencias y CTA Buscar -->
+                <div class="p-3 bg-sup-cream border-t-2 border-sup-green space-y-2.5 shrink-0">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="inline-block bg-sup-orange text-white border border-sup-green px-1.5 py-0.5 rounded-xs text-[9px] font-display uppercase tracking-wider mb-1 shadow-hard-sm">¿CUÁNDO SALES?</span>
+                            <div class="grid grid-cols-3 gap-1">
+                                <button type="button" onclick="selectTime(this, 'AHORA')" class="time-btn btn-brutal-sm bg-sup-orange text-white text-[10px] font-bold py-1.5 rounded-sm uppercase">AHORA</button>
+                                <button type="button" onclick="selectTime(this, '10 MIN')" class="time-btn btn-brutal-sm bg-white text-sup-green hover:bg-sup-orange/15 text-[10px] font-bold py-1.5 rounded-sm uppercase">10M</button>
+                                <button type="button" onclick="selectTime(this, '20 MIN')" class="time-btn btn-brutal-sm bg-white text-sup-green hover:bg-sup-orange/15 text-[10px] font-bold py-1.5 rounded-sm uppercase">20M</button>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="inline-block bg-sup-green text-sup-cream border border-sup-green px-1.5 py-0.5 rounded-xs text-[9px] font-display uppercase tracking-wider mb-1 shadow-hard-sm">DIVIDIR CON:</span>
+                            <div class="grid grid-cols-2 gap-1">
+                                <button type="button" onclick="selectPayment(this, 'YAPE / PLIN')" class="pay-btn btn-brutal-sm bg-sup-plum text-white text-[10px] font-bold py-1.5 rounded-sm uppercase">YAPE/PLIN</button>
+                                <button type="button" onclick="selectPayment(this, 'EFECTIVO')" class="pay-btn btn-brutal-sm bg-white text-sup-green text-[10px] font-bold py-1.5 rounded-sm uppercase">EFECTIVO</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Switch Filtro Solo Mujeres -->
+                    <label class="flex items-center justify-between bg-white border-2 border-sup-green rounded-md px-3 py-2 cursor-pointer select-none">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm">♀</span>
+                            <div>
+                                <span class="block text-[11px] font-bold uppercase text-sup-green leading-none">SOLO MUJERES VERIFICADAS</span>
+                                <span class="text-[9px] font-medium text-sup-green/70">Filtra coincidencias exclusivamente femeninas</span>
+                            </div>
+                        </div>
+                        <input type="checkbox" id="women-only-toggle" class="w-4 h-4 accent-[#FA4A19] border-2 border-sup-green rounded-xs">
+                    </label>
+
+                    <button type="button" onclick="startRadarSearch()" class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-sm uppercase tracking-wider py-3 rounded-md flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-satellite-dish"></i>
+                        <span>BUSCAR COMPAÑEROS EN RUTA</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ================================================================= -->
+            <!-- PANTALLA 2: RADAR DE COINCIDENCIAS (EL MATCH)                     -->
+            <!-- ================================================================= -->
+            <section id="screen-2" class="hidden flex-col h-full w-full overflow-hidden">
+                <!-- Cabecera Verde Bosque estilo SUPClub -->
+                <div class="bg-sup-green text-sup-cream p-3 border-b-2 border-sup-green shrink-0 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <button type="button" onclick="goToScreen(1)" class="btn-brutal-sm bg-sup-cream text-sup-green text-[10px] font-bold uppercase px-2.5 py-1 rounded-sm">
+                            ← MAPA
+                        </button>
+                        <span id="radar-user-badge" class="bg-sup-orange text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm border border-sup-cream">
+                            🎓 UTP
+                        </span>
+                    </div>
+                    <div>
+                        <h2 class="font-display text-lg uppercase text-sup-orange leading-tight">RADAR EN VIVO</h2>
+                        <p id="radar-route-label" class="text-[11px] font-bold uppercase text-sup-cream truncate">UTP → CERRO COLORADO</p>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 pt-0.5">
+                        <span id="radar-time-badge" class="text-[10px] font-bold uppercase bg-sup-greenLight border border-sup-cream/30 px-2 py-1 rounded-sm">
+                            SALIDA: AHORA
+                        </span>
+                        <button type="button" id="radar-women-pill" onclick="toggleWomenFilterInRadar()" class="px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase border-2 transition-all bg-sup-cream text-sup-green border-sup-cream">
+                            ♀ TODAS
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lista Scrolleable de Tarjetas de Match -->
+                <div id="matches-container" class="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar"></div>
+            </section>
+
+            <!-- ================================================================= -->
+            <!-- PANTALLA 3: SALA DE COORDINACIÓN (CHAT EFÍMERO)                   -->
+            <!-- ================================================================= -->
+            <section id="screen-3" class="hidden flex-col h-full w-full overflow-hidden">
+                <!-- Cabecera Fija del Compañero + Temporizador -->
+                <div class="bg-sup-green text-sup-cream p-3 border-b-2 border-sup-green shrink-0 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <img id="chat-partner-avatar" src="" alt="Compañero" class="w-10 h-10 rounded-sm object-cover border-2 border-sup-cream shrink-0">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <h3 id="chat-partner-name" class="font-display text-sm uppercase text-white truncate">VALERIA R.</h3>
+                                    <span id="chat-partner-uni" class="bg-sup-cream text-sup-green text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-xs shrink-0">🎓 UTP</span>
+                                </div>
+                                <p id="chat-partner-meta" class="text-[10px] font-bold text-sup-cream/80 truncate">⭐ 4.9 • 98% PUNTUALIDAD</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button type="button" onclick="fastForwardFiveMinutes()" title="Simular paso de 5 min para habilitar No Apareció" class="bg-sup-greenLight hover:bg-sup-orange text-sup-cream border border-sup-cream/50 px-1.5 py-1 rounded-sm text-[8px] font-bold uppercase leading-tight">
+                                +5M<br>TEST
+                            </button>
+                            <div class="bg-sup-orange text-white border-2 border-sup-cream px-2.5 py-1 rounded-sm text-center">
+                                <span class="block text-[8px] font-bold uppercase leading-none">EXPIRA</span>
+                                <span id="match-timer" class="font-display text-xs">14:59</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-sup-cream text-sup-green text-[10px] font-bold px-2.5 py-1.5 rounded-sm border border-sup-green">
+                        🤝 ACUERDO LIBRE: Elijan una esquina iluminada y decidan quién pide el <strong>Uber o InDrive</strong>.
+                    </div>
+                </div>
+
+                <!-- Mensajes del Chat -->
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-3 space-y-2.5 no-scrollbar bg-sup-cream"></div>
+
+                <!-- Indicador de escritura -->
+                <div id="typing-indicator" class="hidden px-3 py-1 bg-sup-cream text-[10px] font-bold uppercase text-sup-orange">
+                    <span id="typing-name">VALERIA ESTÁ ESCRIBIENDO...</span>
+                </div>
+
+                <!-- Chips Rápidos + Input + Botones de Cierre -->
+                <div class="p-2.5 bg-sup-creamDark border-t-2 border-sup-green space-y-2 shrink-0">
+                    <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                        <button type="button" onclick="sendQuickChip('📍 ¿En qué esquina nos vemos?')" class="btn-brutal-sm bg-white text-sup-green text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0">📍 ¿Qué esquina?</button>
+                        <button type="button" onclick="sendQuickChip('📱 Yo pido el InDrive / Uber')" class="btn-brutal-sm bg-white text-sup-green text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0">📱 Yo pido Uber/InDrive</button>
+                        <button type="button" onclick="sendQuickChip('🏃 Llego en 3 min')" class="btn-brutal-sm bg-white text-sup-green text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0">🏃 Llego en 3 min</button>
+                        <button type="button" onclick="sendQuickChip('🧥 Tengo casaca negra / mochila')" class="btn-brutal-sm bg-white text-sup-green text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0">🧥 Casaca/Mochila</button>
+                    </div>
+
+                    <form onsubmit="handleSendMessage(event)" class="flex gap-1.5">
+                        <input type="text" id="chat-input" placeholder="Escribe un mensaje..." class="flex-1 bg-white border-2 border-sup-green rounded-sm px-2.5 py-1.5 text-xs font-bold text-sup-green focus:outline-none">
+                        <button type="submit" class="btn-brutal-sm bg-sup-green text-sup-cream px-3 py-1.5 rounded-sm font-bold text-xs uppercase">ENVIAR</button>
+                    </form>
+
+                    <!-- Barra de estado de tolerancia de 5 min para habilitar No-Show -->
+                    <div id="noshow-lock-hint" class="text-center text-[9px] font-bold uppercase text-sup-green/75 bg-white/70 border border-sup-green/30 rounded-xs py-1 px-2">
+                        ⏱️ Botón <span class="text-sup-orange">⚠️ NO APARECIÓ</span> se habilita tras 5 min de espera (<span id="noshow-countdown-text">05:00</span>)
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-1.5 pt-0.5">
+                        <button type="button" onclick="cancelMatch()" class="btn-brutal-sm col-span-3 bg-white hover:bg-sup-cream text-sup-green font-bold text-[9px] uppercase py-2 rounded-sm">
+                            CANCELAR
+                        </button>
+                        <button type="button" id="noshow-btn" onclick="reportNoShow()" disabled class="btn-brutal-sm col-span-4 bg-sup-cream text-sup-green/40 font-bold text-[9px] uppercase py-2 rounded-sm cursor-not-allowed">
+                            ⚠️ NO APARECIÓ
+                        </button>
+                        <button type="button" onclick="confirmMeetup()" class="btn-brutal col-span-5 bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-[10px] uppercase py-2 rounded-sm">
+                            ¡YA NOS VIMOS!
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================================================================= -->
+            <!-- PANTALLA 4: MODO VIAJE SEGURO Y COMPARTIR POR WHATSAPP            -->
+            <!-- ================================================================= -->
+            <section id="screen-4" class="hidden flex-col h-full w-full overflow-y-auto no-scrollbar bg-sup-green text-sup-cream p-4 justify-between space-y-3">
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="bg-sup-orange text-white font-display text-[10px] uppercase px-2.5 py-1 rounded-sm border border-sup-cream">
+                            🛡️ MODO VIAJE ACTIVO
+                        </span>
+                        <span class="text-[10px] font-bold uppercase text-sup-cream/75">CHAT EFÍMERO CERRADO</span>
+                    </div>
+
+                    <h2 class="font-display text-2xl uppercase text-sup-orange leading-none">
+                        VIAJE EN CURSO
+                    </h2>
+                    <p id="trip-route-summary" class="text-xs font-bold uppercase text-sup-cream">
+                        UTP - AV. PARRA → CERRO COLORADO
+                    </p>
+
+                    <!-- Animación en Bucle: Carrito avanzando en línea recta de Punto A a Punto B -->
+                    <div class="bg-sup-cream text-sup-green border-2 border-sup-orange shadow-hard-orange p-3 rounded-md space-y-2">
+                        <div class="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider">
+                            <span class="bg-sup-green text-sup-cream px-1.5 py-0.5 rounded-xs">PUNTO A • SALIDA</span>
+                            <span class="text-sup-orange flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-sup-orange animate-ping"></span>
+                                EN RUTA
+                            </span>
+                            <span class="bg-sup-orange text-white px-1.5 py-0.5 rounded-xs border border-sup-green">PUNTO B • DESTINO</span>
+                        </div>
+
+                        <!-- Pista recta con nodos A y B + Carrito animado -->
+                        <div class="relative h-10 flex items-center px-2">
+                            <!-- Línea base de la pista -->
+                            <div class="w-full h-1.5 bg-sup-creamDark border border-sup-green rounded-full relative overflow-hidden">
+                                <div class="w-full h-full road-track-line opacity-60"></div>
+                            </div>
+
+                            <!-- Nodo Punto A -->
+                            <div class="absolute left-1.5 w-4 h-4 rounded-full bg-sup-green border-2 border-sup-cream shadow-hard-sm flex items-center justify-center z-10" title="Punto A">
+                                <span class="text-[8px] font-display text-sup-cream">A</span>
+                            </div>
+
+                            <!-- Carrito Retro avanzando en bucle -->
+                            <div class="taxi-loop-mover z-20 pointer-events-none">
+                                <div class="bg-sup-orange text-white border-2 border-sup-green shadow-hard-sm px-2 py-1 rounded-md flex items-center gap-1">
+                                    <i class="fa-solid fa-taxi text-xs"></i>
+                                </div>
+                            </div>
+
+                            <!-- Nodo Punto B -->
+                            <div class="absolute right-1.5 w-4 h-4 rounded-full bg-sup-orange border-2 border-sup-green shadow-hard-sm flex items-center justify-center z-10" title="Punto B">
+                                <span class="text-[8px] font-display text-white">B</span>
+                            </div>
+                        </div>
+
+                        <!-- Etiquetas dinámicas de Punto A y Punto B -->
+                        <div class="flex items-center justify-between gap-2 text-[10px] font-bold uppercase pt-0.5 border-t border-sup-green/15">
+                            <span id="trip-point-a" class="truncate max-w-[44%] text-sup-green">UTP - AV. PARRA</span>
+                            <span class="text-sup-green/40">•••</span>
+                            <span id="trip-point-b" class="truncate max-w-[44%] text-right text-sup-orange">CERRO COLORADO</span>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta del Compañero Verificado -->
+                    <div class="bg-sup-cream text-sup-green border-2 border-sup-orange shadow-hard-orange p-3 rounded-md flex items-center gap-3">
+                        <img id="trip-partner-avatar" src="" alt="Compañero" class="w-12 h-12 rounded-sm object-cover border-2 border-sup-green shrink-0">
+                        <div class="min-w-0">
+                            <h3 id="trip-partner-name" class="font-display text-sm uppercase truncate">VALERIA R.</h3>
+                            <p id="trip-partner-uni" class="text-[10px] font-bold uppercase text-sup-orange">🎓 ESTUDIANTE VERIFICADO UTP</p>
+                            <p id="trip-partner-stats" class="text-[10px] font-bold text-sup-green/80">⭐ 4.9 • 28 VIAJES</p>
+                        </div>
+                    </div>
+
+                    <!-- Vista Previa del Reporte de Seguridad WhatsApp -->
+                    <div class="bg-sup-greenLight border-2 border-sup-cream/40 p-3 rounded-md space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase text-sup-orange">RESPALDO PARA FAMILIAR / AMIGO</span>
+                            <button type="button" onclick="copyWhatsAppMessage()" class="text-[10px] font-bold uppercase underline text-sup-cream hover:text-sup-orange">
+                                COPIAR TEXTO
+                            </button>
+                        </div>
+                        <pre id="whatsapp-preview-text" class="whitespace-pre-wrap font-sans text-[11px] text-sup-cream/95 leading-snug"></pre>
+                    </div>
+                </div>
+
+                <!-- Botones WhatsApp y Cierre de Viaje -->
+                <div class="space-y-2 pt-1">
+                    <button type="button" onclick="shareToWhatsApp()" class="btn-brutal w-full bg-[#25D366] text-sup-green font-display text-xs uppercase py-3 rounded-md flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-base"></i>
+                        <span>COMPARTIR DATOS POR WHATSAPP</span>
+                    </button>
+                    <button type="button" onclick="openRatingModal()" class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs uppercase py-3 rounded-md">
+                        ✓ LLEGUÉ BIEN • FINALIZAR VIAJE
+                    </button>
+                </div>
+            </section>
+
+        </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- JAVASCRIPT: LANDING AUTH, MAPAS DE AREQUIPA, RADAR DE MATCH Y CHAT        -->
+    <!-- ========================================================================= -->
+    <script>
+        // 1. COORDENADAS REALES DE AREQUIPA METROPOLITANA
+        const PLACES_AQP = {
+            origins: {
+                utp: { name: "UTP - AV. PARRA", coords: [-16.4090, -71.5432] },
+                unsa_soc: { name: "UNSA SOCIALES (AV. VENEZUELA)", coords: [-16.4038, -71.5245] },
+                unsa_ing: { name: "UNSA INGENIERÍAS (AV. INDEPENDENCIA)", coords: [-16.4052, -71.5318] },
+                ucsm: { name: "UCSM - UMACOLLO", coords: [-16.4059, -71.5484] },
+                ucsp: { name: "UCSP - URB. CAMPESTRE", coords: [-16.3905, -71.5356] },
+                tecsup: { name: "TECSUP / SENATI - PARQUE INDUSTRIAL", coords: [-16.4285, -71.5438] },
+                mall: { name: "MALL AVENTURA PORONGOCHE", coords: [-16.4184, -71.5159] },
+                realplaza: { name: "REAL PLAZA CAYMA", coords: [-16.3894, -71.5476] },
+                mallplaza: { name: "MALLPLAZA CAYMA (AV. EJÉRCITO)", coords: [-16.3912, -71.5462] },
+                lambramani: { name: "PARQUE LAMBRAMANI", coords: [-16.4116, -71.5221] },
+                plaza_armas: { name: "PLAZA DE ARMAS / CERCADO", coords: [-16.3988, -71.5369] },
+                ovalo: { name: "ÓVALO QUIÑONES - YANAHUARA", coords: [-16.3958, -71.5488] },
+                terminal: { name: "TERMINAL TERRESTRE / TERRAPUERTO", coords: [-16.4251, -71.5408] },
+                avelino: { name: "ÓVALO AV. AVELINO CÁCERES", coords: [-16.4244, -71.5335] }
+            },
+            destinations: {
+                cerro_colorado: { name: "CERRO COLORADO (AV. AVIACIÓN)", coords: [-16.3725, -71.5592] },
+                cono_norte: { name: "CONO NORTE / CIUDAD MUNICIPAL", coords: [-16.3385, -71.5862] },
+                cayma: { name: "CAYMA (PLAZA / AV. BOLOGNESI)", coords: [-16.3820, -71.5450] },
+                yanahuara: { name: "YANAHUARA (MIRADOR / AV. EMMEL)", coords: [-16.3876, -71.5418] },
+                asa: { name: "ALTO SELVA ALEGRE (AV. OBRERA)", coords: [-16.3782, -71.5248] },
+                miraflores: { name: "MIRAFLORES (PLAZA MAYTA CÁPAC)", coords: [-16.3942, -71.5215] },
+                mariano_melgar: { name: "MARIANO MELGAR (AV. JESÚS)", coords: [-16.4045, -71.5095] },
+                jlbyr: { name: "JLBYR (AV. DOLORES / BUSTAMANTE)", coords: [-16.4258, -71.5236] },
+                paucarpata: { name: "PAUCARPATA (AV. KENNEDY)", coords: [-16.4235, -71.5030] },
+                socabaya: { name: "SOCABAYA (LARA / HORACIO ZEBALLOS)", coords: [-16.4450, -71.5290] },
+                hunter: { name: "HUNTER (AV. VIÑA DEL MAR)", coords: [-16.4332, -71.5515] },
+                sachaca: { name: "SACHACA / TIABAYA (AV. FERNANDINI)", coords: [-16.4242, -71.5685] }
+            }
+        };
+
+        // 2. COMPAÑEROS VERIFICADOS SIMULADOS
+        const MOCK_USERS = [
+            {
+                id: "u1",
+                name: "Valeria R.",
+                gender: "F",
+                uni: "UTP",
+                emailDomain: "@utp.edu.pe",
+                rating: "4.9",
+                trips: 28,
+                punctuality: "98%",
+                avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+                matchType: "same",
+                distanceMeters: 180,
+                payment: "YAPE / PLIN",
+                departure: "AHORA",
+                sharedPercent: "100% MISMA RUTA",
+                stopDistrict: "YANAHUARA",
+                stopStreet: "Av. Ejército / Óvalo Quiñones",
+                bio: "Salgo de pabellón B hacia Av. Aviación. Podemos pedir InDrive o Uber.",
+                replies: [
+                    "¡Hola! Dale, estoy saliendo por la puerta principal de Av. Parra 😊",
+                    "Perfecto, tengo mi app de InDrive lista para pedirlo apenas nos veamos.",
+                    "Ya te vi, estoy al costado del kiosko con mochila beige."
+                ]
+            },
+            {
+                id: "u2",
+                name: "Mateo G.",
+                gender: "M",
+                uni: "UNSA",
+                emailDomain: "@unsa.edu.pe",
+                rating: "4.8",
+                trips: 15,
+                punctuality: "95%",
+                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+                matchType: "route",
+                distanceMeters: 220,
+                payment: "YAPE / PLIN",
+                departure: "AHORA",
+                sharedPercent: "65% EN TU RUTA (DE PASO)",
+                stopDistrict: "YANAHUARA",
+                stopStreet: "Av. Ejército / Óvalo Quiñones",
+                bio: "Voy por toda la avenida principal y me bajo 10 cuadras antes de tu destino.",
+                replies: [
+                    "Qué tal bro, estoy a media cuadra en el grifo. ¿Nos vemos en la esquina?",
+                    "De una, pedimos un Uber y te yapeo mi parte al toque.",
+                    "Listo, ya estoy en la esquina con polera ploma."
+                ]
+            },
+            {
+                id: "u3",
+                name: "Camila S.",
+                gender: "F",
+                uni: "UCSM",
+                emailDomain: "@ucsm.edu.pe",
+                rating: "5.0",
+                trips: 41,
+                punctuality: "100%",
+                avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+                matchType: "same",
+                distanceMeters: 140,
+                payment: "EFECTIVO",
+                departure: "EN 10 MIN",
+                sharedPercent: "100% MISMA RUTA",
+                stopDistrict: "CERCADO",
+                stopStreet: "Av. Venezuela / Puente Grau",
+                bio: "Voy directo hacia la misma zona, prefiero dividir en efectivo o Plin.",
+                replies: [
+                    "¡Hola! Qué coincidencia, justo iba a pedir un Uber sola.",
+                    "Nos vemos en la esquina iluminada frente a la farmacia, ¿te parece?",
+                    "Genial, ya estoy ahí."
+                ]
+            }
+        ];
+
+        // 3. ESTADO GLOBAL DE LA APP
+        let appState = {
+            authMode: 'login', // 'login' | 'register'
+            userName: 'Hugo H.',
+            userUni: 'UTP',
+            userEmail: '',
+            userGender: 'M',
+            currentScreen: 0,
+            originKey: "utp",
+            destKey: "cerro_colorado",
+            departureTime: "AHORA",
+            paymentMethod: "YAPE / PLIN",
+            womenOnly: false,
+            dismissedUserIds: [],
+            activePartner: null,
+            pendingPartner: null,
+            requestInterval: null,
+            requestAutoAcceptTimeout: null,
+            requestSecondsRemaining: 60,
+            selectedRating: 5,
+            timerInterval: null,
+            secondsRemaining: 900,
+            replyIndex: 0
+        };
+
+        let map1 = null;
+        let originCircle = null;
+        let destMarker = null;
+        let routeLine = null;
+        let toastTimeout = null;
+
+        const STORAGE_KEYS = {
+            USER_SESSION: 'vamonos_user_session_v1',
+            PENDING_SURVEY: 'vamonos_pending_survey_v1'
+        };
+
+        // 4. UTILIDADES DE NOTIFICACIÓN Y DOMINIOS UNIVERSITARIOS
+        function showToast(message) {
+            const banner = document.getElementById('toast-banner');
+            const msgEl = document.getElementById('toast-message');
+            if (!banner || !msgEl) return;
+
+            msgEl.textContent = message;
+            banner.classList.remove('hidden');
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                banner.classList.add('hidden');
+            }, 3400);
+        }
+
+        function detectUniFromEmail(email) {
+            const lower = (email || '').trim().toLowerCase();
+            if (lower.endsWith('@utp.edu.pe')) return 'UTP';
+            if (lower.endsWith('@unsa.edu.pe')) return 'UNSA';
+            if (lower.endsWith('@ucsm.edu.pe')) return 'UCSM';
+            if (lower.endsWith('@ucsp.edu.pe')) return 'UCSP';
+            if (lower.endsWith('@ulasalle.edu.pe')) return 'ULASALLE';
+            return null;
+        }
+
+        function handleLiveDomainCheck(inputId, feedbackId) {
+            const input = document.getElementById(inputId);
+            const feedback = document.getElementById(feedbackId);
+            if (!input || !feedback) return;
+
+            const detected = detectUniFromEmail(input.value);
+            if (detected) {
+                feedback.innerHTML = `<span class="inline-flex items-center gap-1.5 bg-[#1E7A50] text-white border-2 border-sup-green shadow-hard-sm px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide">✅ Dominio ${detected} detectado • Insignia 🎓 Verificada</span>`;
+                feedback.classList.remove('hidden');
+            } else {
+                feedback.classList.add('hidden');
+                feedback.innerHTML = '';
+            }
+        }
+
+        // 5. AUTENTICACIÓN LANDING PAGE Y PERFIL
+        function switchAuthMode(mode) {
+            appState.authMode = mode;
+            const loginBtn = document.getElementById('tab-login-btn');
+            const regBtn = document.getElementById('tab-register-btn');
+            const loginBox = document.getElementById('auth-login-box');
+            const regBox = document.getElementById('auth-register-box');
+            const primaryLabel = document.getElementById('primary-cta-label');
+            const secondaryLabel = document.getElementById('secondary-cta-label');
+
+            if (mode === 'login') {
+                loginBtn.className = 'px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border-2 border-sup-green bg-sup-green text-sup-cream transition-colors';
+                regBtn.className = 'px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border-2 border-sup-green bg-white text-sup-green hover:bg-sup-creamDark transition-colors';
+                loginBox.classList.remove('hidden');
+                regBox.classList.add('hidden');
+                primaryLabel.textContent = 'Entrar al Mapa';
+                secondaryLabel.textContent = 'Crear Cuenta 🎓';
+            } else {
+                regBtn.className = 'px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border-2 border-sup-green bg-sup-green text-sup-cream transition-colors';
+                loginBtn.className = 'px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border-2 border-sup-green bg-white text-sup-green hover:bg-sup-creamDark transition-colors';
+                regBox.classList.remove('hidden');
+                loginBox.classList.add('hidden');
+                primaryLabel.textContent = 'Registrar y Entrar';
+                secondaryLabel.textContent = 'Ya tengo cuenta';
+            }
+        }
+
+        function toggleRegisterFromButton() {
+            switchAuthMode(appState.authMode === 'login' ? 'register' : 'login');
+        }
+
+        function getInitials(name) {
+            const parts = (name || 'HH').trim().split(/\s+/);
+            if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+            return (parts[0][0] + parts[1][0]).toUpperCase();
+        }
+
+        function saveUserSession() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.USER_SESSION, JSON.stringify({
+                    userName: appState.userName,
+                    userUni: appState.userUni,
+                    userEmail: appState.userEmail,
+                    userGender: appState.userGender
+                }));
+            } catch (e) {}
+        }
+
+        function syncUserUI() {
+            const initials = getInitials(appState.userName);
+            const isUni = appState.userUni && appState.userUni !== 'AQP';
+
+            const headerInit = document.getElementById('header-avatar-initials');
+            const modalInit = document.getElementById('modal-avatar-initials');
+            const modalName = document.getElementById('modal-user-name');
+            const modalBadge = document.getElementById('modal-user-badge');
+            const modalGender = document.getElementById('modal-user-gender');
+            const modalEmail = document.getElementById('modal-user-email');
+            const radarBadge = document.getElementById('radar-user-badge');
+
+            if (headerInit) headerInit.textContent = initials;
+            if (modalInit) modalInit.textContent = initials;
+            if (modalName) modalName.textContent = appState.userName.toUpperCase();
+            if (modalBadge) {
+                modalBadge.textContent = isUni
+                    ? `🎓 ESTUDIANTE VERIFICADO • ${appState.userUni}`
+                    : '✅ PASAJERO VERIFICADO • AQP';
+            }
+            if (modalGender) {
+                modalGender.textContent = appState.userGender === 'F' ? 'FEMENINO (♀ ACTIVO)' : 'MASCULINO';
+            }
+            if (modalEmail) {
+                modalEmail.textContent = appState.userEmail || 'NO VINCULADO';
+            }
+            if (radarBadge) {
+                radarBadge.textContent = isUni ? `🎓 ${appState.userUni}` : '✅ AQP';
+            }
+        }
+
+        function enterAppFromLanding() {
+            if (appState.authMode === 'login') {
+                const raw = (document.getElementById('landing-user-input').value || '').trim();
+                if (!raw) {
+                    showToast('INGRESA TU NOMBRE O CORREO PARA ENTRAR');
+                    return;
+                }
+                if (raw.includes('@')) {
+                    const detected = detectUniFromEmail(raw);
+                    appState.userEmail = raw;
+                    appState.userUni = detected || 'AQP';
+                    const localPart = raw.split('@')[0];
+                    appState.userName = localPart.charAt(0).toUpperCase() + localPart.slice(1);
+                } else {
+                    appState.userName = raw;
+                    if (!appState.userUni) appState.userUni = 'UTP';
+                }
+            } else {
+                const name = (document.getElementById('reg-name').value || '').trim();
+                const gender = document.getElementById('reg-gender').value || 'F';
+                const email = (document.getElementById('reg-email').value || '').trim();
+                if (!name) {
+                    showToast('INGRESA TU NOMBRE CORTO PARA REGISTRARTE');
+                    return;
+                }
+                appState.userName = name;
+                appState.userGender = gender;
+                appState.userEmail = email;
+                const detected = detectUniFromEmail(email);
+                appState.userUni = detected || 'AQP';
+            }
+
+            saveUserSession();
+            activateAppShell();
+            showToast(`¡BIENVENIDO ${appState.userName.toUpperCase()}!`);
+        }
+
+        function activateAppShell() {
+            syncUserUI();
+            document.getElementById('screen-0').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+
+            const topbar = document.getElementById('global-topbar');
+            const userControls = document.getElementById('active-user-controls');
+            if (topbar) topbar.classList.add('app-mode');
+            if (userControls) {
+                userControls.classList.remove('hidden');
+                userControls.classList.add('flex');
+            }
+
+            goToScreen(1);
+            setTimeout(() => {
+                initMapScreen1();
+                checkPendingSurveyEnforcement();
+            }, 80);
+        }
+
+        function returnToLanding() {
+            if (checkPendingSurveyEnforcement()) return;
+            closeProfileModal();
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('screen-0').classList.remove('hidden');
+
+            const topbar = document.getElementById('global-topbar');
+            const userControls = document.getElementById('active-user-controls');
+            if (topbar) topbar.classList.remove('app-mode');
+            if (userControls) {
+                userControls.classList.add('hidden');
+                userControls.classList.remove('flex');
+            }
+            appState.currentScreen = 0;
+        }
+
+        function openProfileModal() {
+            if (checkPendingSurveyEnforcement()) return;
+            syncUserUI();
+            document.getElementById('profile-modal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').classList.add('hidden');
+        }
+
+        function simulateUniVerification() {
+            const emailInput = document.getElementById('demo-uni-email');
+            const email = (emailInput.value || '').trim();
+            const detected = detectUniFromEmail(email);
+            if (!detected) {
+                showToast('USA UN CORREO @UTP, @UNSA, @UCSM O @UCSP');
+                return;
+            }
+            appState.userEmail = email;
+            appState.userUni = detected;
+            saveUserSession();
+            syncUserUI();
+            emailInput.value = '';
+            showToast(`🎓 INSIGNIA ${detected} VERIFICADA`);
+        }
+
+        function logoutFromProfileModal() {
+            if (checkPendingSurveyEnforcement()) return;
+            try {
+                localStorage.removeItem(STORAGE_KEYS.USER_SESSION);
+            } catch (e) {}
+            closeProfileModal();
+            returnToLanding();
+            showToast('SESIÓN CERRADA CORRECTAMENTE');
+        }
+
+        // 6. NAVEGACIÓN ENTRE LAS 4 PANTALLAS Y MAPA DE AREQUIPA
+        function goToScreen(num) {
+            appState.currentScreen = num;
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById(`screen-${i}`);
+                if (!el) continue;
+                if (i === num) {
+                    el.classList.remove('hidden');
+                    el.classList.add('flex');
+                } else {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                }
+            }
+            if (num === 1 && map1) {
+                setTimeout(() => map1.invalidateSize(), 60);
+            }
+        }
+
+        function initMapScreen1() {
+            const mapContainer = document.getElementById('map-screen-1');
+            if (!mapContainer) return;
+
+            if (!map1) {
+                map1 = L.map('map-screen-1', {
+                    zoomControl: false,
+                    attributionControl: true
+                }).setView([-16.4040, -71.5375], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    attribution: '© OSM Arequipa'
+                }).addTo(map1);
+            }
+            updateMapRoute();
+        }
+
+        function updateMapRoute() {
+            const originSelect = document.getElementById('origin-select');
+            const destSelect = document.getElementById('dest-select');
+            if (originSelect) appState.originKey = originSelect.value;
+            if (destSelect) appState.destKey = destSelect.value;
+
+            if (!map1) return;
+
+            const originData = PLACES_AQP.origins[appState.originKey] || PLACES_AQP.origins.utp;
+            const destData = PLACES_AQP.destinations[appState.destKey] || PLACES_AQP.destinations.cerro_colorado;
+
+            if (originCircle) map1.removeLayer(originCircle);
+            if (destMarker) map1.removeLayer(destMarker);
+            if (routeLine) map1.removeLayer(routeLine);
+
+            // Radio de privacidad de 250m alrededor de la salida
+            originCircle = L.circle(originData.coords, {
+                color: '#FA4A19',
+                weight: 3,
+                fillColor: '#FA4A19',
+                fillOpacity: 0.22,
+                radius: 250
+            }).addTo(map1);
+
+            const destIcon = L.divIcon({
+                className: 'custom-dest-pin',
+                html: `<div style="background:#063120;color:#E7DEC8;border:2px solid #FA4A19;width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;box-shadow:2px 2px 0 #063120;">B</div>`,
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
+            });
+
+            destMarker = L.marker(destData.coords, { icon: destIcon }).addTo(map1);
+
+            routeLine = L.polyline([originData.coords, destData.coords], {
+                color: '#063120',
+                weight: 4,
+                dashArray: '8, 8'
+            }).addTo(map1);
+
+            const bounds = L.latLngBounds([originData.coords, destData.coords]);
+            map1.fitBounds(bounds, { padding: [38, 38] });
+        }
+
+        function selectTime(btn, label) {
+            appState.departureTime = label;
+            document.querySelectorAll('.time-btn').forEach(b => {
+                b.className = 'time-btn btn-brutal-sm bg-white text-sup-green hover:bg-sup-orange/15 text-[10px] font-bold py-1.5 rounded-sm uppercase';
+            });
+            btn.className = 'time-btn btn-brutal-sm bg-sup-orange text-white text-[10px] font-bold py-1.5 rounded-sm uppercase';
+        }
+
+        function selectPayment(btn, method) {
+            appState.paymentMethod = method;
+            document.querySelectorAll('.pay-btn').forEach(b => {
+                b.className = 'pay-btn btn-brutal-sm bg-white text-sup-green text-[10px] font-bold py-1.5 rounded-sm uppercase';
+            });
+            if (method.includes('YAPE')) {
+                btn.className = 'pay-btn btn-brutal-sm bg-sup-plum text-white text-[10px] font-bold py-1.5 rounded-sm uppercase';
+            } else {
+                btn.className = 'pay-btn btn-brutal-sm bg-sup-green text-sup-cream text-[10px] font-bold py-1.5 rounded-sm uppercase';
+            }
+        }
+
+        // 7. PANTALLA 2: RADAR DE COINCIDENCIAS
+        function startRadarSearch() {
+            const womenCheck = document.getElementById('women-only-toggle');
+            appState.womenOnly = womenCheck ? womenCheck.checked : false;
+
+            const originData = PLACES_AQP.origins[appState.originKey];
+            const destData = PLACES_AQP.destinations[appState.destKey];
+            const originShort = originData.name.split(' (')[0];
+            const destShort = destData.name.split(' (')[0];
+
+            document.getElementById('radar-route-label').textContent = `${originShort} → ${destShort}`;
+            document.getElementById('radar-time-badge').textContent = `SALIDA: ${appState.departureTime} • ${appState.paymentMethod}`;
+
+            updateRadarWomenPill();
+            renderMatchCards();
+            goToScreen(2);
+        }
+
+        function toggleWomenFilterInRadar() {
+            appState.womenOnly = !appState.womenOnly;
+            const womenCheck = document.getElementById('women-only-toggle');
+            if (womenCheck) womenCheck.checked = appState.womenOnly;
+            updateRadarWomenPill();
+            renderMatchCards();
+        }
+
+        function updateRadarWomenPill() {
+            const pill = document.getElementById('radar-women-pill');
+            if (!pill) return;
+            if (appState.womenOnly) {
+                pill.className = 'px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase border-2 transition-all bg-sup-orange text-white border-sup-cream';
+                pill.textContent = '♀ SOLO MUJERES';
+            } else {
+                pill.className = 'px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase border-2 transition-all bg-sup-cream text-sup-green border-sup-cream';
+                pill.textContent = '♀ TODAS';
+            }
+        }
+
+        function renderMatchCards() {
+            const container = document.getElementById('matches-container');
+            if (!container) return;
+
+            const destData = PLACES_AQP.destinations[appState.destKey];
+            const destDistrict = destData.name.split(' (')[0];
+            const destStreetMatch = destData.name.match(/\(([^)]+)\)/);
+            const destStreet = destStreetMatch ? destStreetMatch[1] : 'Avenida Principal';
+
+            const candidates = MOCK_USERS.filter(u => {
+                if (appState.dismissedUserIds.includes(u.id)) return false;
+                if (appState.womenOnly && u.gender !== 'F') return false;
+                return true;
+            });
+
+            if (candidates.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white border-2 border-sup-green shadow-hard rounded-lg p-5 text-center space-y-3 my-4">
+                        <div class="text-2xl">📡</div>
+                        <h3 class="font-display text-sm uppercase text-sup-green">NO QUEDAN MÁS COMPAÑEROS EN ESTE BLOQUE</h3>
+                        <p class="text-xs font-medium text-sup-green/75">Vuelve a cargar el radar o cambia el filtro de salida.</p>
+                        <button type="button" onclick="resetRadarCards()" class="btn-brutal bg-sup-orange text-white font-display text-xs uppercase px-4 py-2 rounded-md">
+                            ↻ RECARGAR RADAR
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = candidates.map(user => {
+                const isSame = user.matchType === 'same';
+                const badgeClass = isSame ? 'bg-[#1E7A50] text-white' : 'bg-sup-green text-sup-cream';
+                const badgeLabel = isSame ? '🟢 MISMO DESTINO' : '🔵 EN TU RUTA (DE PASO)';
+                const routeDistrict = isSame ? destDistrict : user.stopDistrict;
+                const routeStreet = isSame ? destStreet : user.stopStreet;
+                const routePrefix = isSame ? 'SU DESTINO:' : 'BAJA EN:';
+
+                return `
+                    <article class="bg-white border-2 border-sup-green shadow-hard rounded-lg p-3 space-y-2.5 animate-pop">
+                        <!-- Fila Superior: Tipo de Match + Cercanía -->
+                        <div class="flex items-center justify-between gap-1.5">
+                            <span class="${badgeClass} border border-sup-green text-[9px] font-bold uppercase px-2 py-0.5 rounded-xs">
+                                ${badgeLabel}
+                            </span>
+                            <span class="text-[10px] font-bold uppercase text-sup-green/80">
+                                📍 A ${user.distanceMeters}M DE TI
+                            </span>
+                        </div>
+
+                        <!-- Datos del Estudiante -->
+                        <div class="flex items-center gap-3">
+                            <img src="${user.avatar}" alt="${user.name}" class="w-14 h-14 rounded-sm object-cover border-2 border-sup-green shadow-hard-sm shrink-0">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center justify-between gap-1">
+                                    <h3 class="font-display text-base uppercase text-sup-green truncate">${user.name}</h3>
+                                    <span class="bg-sup-orange text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm border border-sup-green shrink-0">⭐ ${user.rating}</span>
+                                </div>
+                                <div class="mt-1 flex flex-wrap items-center gap-1">
+                                    <span class="bg-sup-cream border border-sup-green text-sup-green text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
+                                        🎓 ESTUDIANTE VERIFICADO ${user.uni}
+                                    </span>
+                                    <span class="bg-white border border-sup-green text-sup-green text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
+                                        ⏱️ ${user.punctuality} PUNTUAL
+                                    </span>
+                                </div>
+                                <p class="text-[10px] font-bold text-sup-green/70 mt-0.5">${user.emailDomain}</p>
+                            </div>
+                        </div>
+
+                        <!-- Mini-mapa visual del tramo compartido + Desglose Distrito y Calle -->
+                        <div class="bg-sup-cream border-2 border-sup-green rounded-md p-2.5 space-y-2">
+                            <div class="flex items-center justify-between text-[9px] font-bold uppercase text-sup-green">
+                                <span>TRAMO COMPARTIDO</span>
+                                <span class="text-sup-orange">${user.sharedPercent}</span>
+                            </div>
+                            <div class="relative h-4 flex items-center">
+                                <div class="w-full h-1.5 bg-white border border-sup-green rounded-full overflow-hidden">
+                                    <div class="h-full bg-sup-orange" style="width: ${isSame ? '100%' : '65%'};"></div>
+                                </div>
+                                <span class="absolute left-0 w-3 h-3 rounded-full bg-sup-green border border-white"></span>
+                                <span class="absolute ${isSame ? 'right-0' : 'left-[65%]'} w-3 h-3 rounded-full bg-sup-orange border border-sup-green"></span>
+                            </div>
+                            <!-- Bloque de Ruta con Distrito resaltado y Calle debajo -->
+                            <div class="pt-1.5 border-t border-sup-green/20 flex items-start justify-between gap-2">
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-[9px] font-bold uppercase text-sup-green/70">${routePrefix}</span>
+                                        <span class="bg-sup-green text-sup-cream font-display text-[10px] uppercase px-2 py-0.5 rounded-xs tracking-wide">
+                                            ${routeDistrict}
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] font-bold text-sup-green mt-1 truncate">
+                                        🛣️ ${routeStreet}
+                                    </p>
+                                </div>
+                                <span class="bg-white border border-sup-green text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-xs shrink-0">
+                                    ${user.payment}
+                                </span>
+                            </div>
+                        </div>
+
+                        <p class="text-[11px] font-medium text-sup-green/85 leading-snug">
+                            "${user.bio}"
+                        </p>
+
+                        <!-- Botones Pasar / ¡Vámonos! -->
+                        <div class="grid grid-cols-2 gap-2 pt-0.5">
+                            <button type="button" onclick="dismissMatch('${user.id}')" class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green font-bold text-xs uppercase py-2 rounded-md">
+                                ✕ PASAR
+                            </button>
+                            <button type="button" onclick="acceptMatch('${user.id}')" class="btn-brutal bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs uppercase py-2 rounded-md">
+                                ¡VÁMONOS! →
+                            </button>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function dismissMatch(userId) {
+            if (!appState.dismissedUserIds.includes(userId)) {
+                appState.dismissedUserIds.push(userId);
+            }
+            renderMatchCards();
+        }
+
+        function resetRadarCards() {
+            appState.dismissedUserIds = [];
+            renderMatchCards();
+        }
+
+        // 8. ESTADO INTERMEDIO DE SOLICITUD (60S) Y PANTALLA 3: SALA DE COORDINACIÓN
+        function acceptMatch(userId) {
+            const partner = MOCK_USERS.find(u => u.id === userId);
+            if (!partner) return;
+
+            appState.pendingPartner = partner;
+            appState.requestSecondsRemaining = 60;
+
+            const destData = PLACES_AQP.destinations[appState.destKey];
+            const destDistrict = destData.name.split(' (')[0];
+
+            document.getElementById('req-partner-avatar').src = partner.avatar;
+            document.getElementById('req-partner-name').textContent = partner.name.toUpperCase();
+            document.getElementById('req-partner-uni').textContent = `🎓 ESTUDIANTE VERIFICADO ${partner.uni}`;
+            document.getElementById('req-push-preview').textContent =
+                `"${appState.userName} (🎓 ${appState.userUni}) quiere compartir taxi contigo hacia ${destDistrict}. Toca para aceptar."`;
+
+            const badge = document.getElementById('request-countdown-badge');
+            const progress = document.getElementById('req-progress-bar');
+            if (badge) badge.textContent = '60s';
+            if (progress) progress.style.width = '100%';
+
+            document.getElementById('request-pending-modal').classList.remove('hidden');
+
+            if (appState.requestInterval) clearInterval(appState.requestInterval);
+            if (appState.requestAutoAcceptTimeout) clearTimeout(appState.requestAutoAcceptTimeout);
+
+            appState.requestInterval = setInterval(() => {
+                appState.requestSecondsRemaining--;
+                if (badge) badge.textContent = `${Math.max(0, appState.requestSecondsRemaining)}s`;
+                if (progress) {
+                    const pct = Math.max(0, (appState.requestSecondsRemaining / 60) * 100);
+                    progress.style.width = `${pct}%`;
+                }
+                if (appState.requestSecondsRemaining <= 0) {
+                    cancelPendingRequest(true);
+                }
+            }, 1000);
+
+            // Simulación automática de aceptación tras 3.5 segundos
+            appState.requestAutoAcceptTimeout = setTimeout(() => {
+                confirmPartnerAcceptedMatch();
+            }, 3500);
+        }
+
+        function cancelPendingRequest(expired = false) {
+            if (appState.requestInterval) clearInterval(appState.requestInterval);
+            if (appState.requestAutoAcceptTimeout) clearTimeout(appState.requestAutoAcceptTimeout);
+            appState.pendingPartner = null;
+            document.getElementById('request-pending-modal').classList.add('hidden');
+            showToast(expired ? 'TIEMPO DE ESPERA AGOTADO (60S)' : 'SOLICITUD CANCELADA');
+        }
+
+        function confirmPartnerAcceptedMatch() {
+            if (appState.requestInterval) clearInterval(appState.requestInterval);
+            if (appState.requestAutoAcceptTimeout) clearTimeout(appState.requestAutoAcceptTimeout);
+            document.getElementById('request-pending-modal').classList.add('hidden');
+
+            const partner = appState.pendingPartner;
+            appState.pendingPartner = null;
+            if (!partner) return;
+
+            openCoordinationChat(partner);
+        }
+
+        function openCoordinationChat(partner) {
+            appState.activePartner = partner;
+            appState.replyIndex = 0;
+
+            document.getElementById('chat-partner-avatar').src = partner.avatar;
+            document.getElementById('chat-partner-name').textContent = partner.name.toUpperCase();
+            document.getElementById('chat-partner-uni').textContent = `🎓 ${partner.uni}`;
+            document.getElementById('chat-partner-meta').textContent = `⭐ ${partner.rating} • ${partner.punctuality} PUNTUALIDAD`;
+
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.innerHTML = '';
+
+            goToScreen(3);
+            startMatchTimer();
+            showToast(`¡MATCH CON ${partner.name.toUpperCase()}!`);
+            triggerPartnerReply(partner.replies[0]);
+            appState.replyIndex = 1;
+        }
+
+        function updateTimerAndNoShowUI() {
+            const mins = Math.floor(appState.secondsRemaining / 60);
+            const secs = appState.secondsRemaining % 60;
+            const timerEl = document.getElementById('match-timer');
+            if (timerEl) {
+                timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+
+            // Los primeros 5 minutos (300s) van de 900s hasta 600s
+            const noShowRemaining = Math.max(0, appState.secondsRemaining - 600);
+            const noShowBtn = document.getElementById('noshow-btn');
+            const lockHint = document.getElementById('noshow-lock-hint');
+            const countdownText = document.getElementById('noshow-countdown-text');
+
+            if (noShowRemaining > 0) {
+                const nMins = Math.floor(noShowRemaining / 60);
+                const nSecs = noShowRemaining % 60;
+                if (countdownText) {
+                    countdownText.textContent = `${String(nMins).padStart(2, '0')}:${String(nSecs).padStart(2, '0')}`;
+                }
+                if (lockHint) lockHint.classList.remove('hidden');
+                if (noShowBtn) {
+                    noShowBtn.disabled = true;
+                    noShowBtn.className = 'btn-brutal-sm col-span-4 bg-sup-cream text-sup-green/40 font-bold text-[9px] uppercase py-2 rounded-sm cursor-not-allowed';
+                }
+            } else {
+                if (lockHint) lockHint.classList.add('hidden');
+                if (noShowBtn) {
+                    noShowBtn.disabled = false;
+                    noShowBtn.className = 'btn-brutal-sm col-span-4 bg-sup-yellow hover:bg-sup-orange hover:text-white text-sup-green font-bold text-[9px] uppercase py-2 rounded-sm cursor-pointer';
+                }
+            }
+        }
+
+        function startMatchTimer() {
+            if (appState.timerInterval) clearInterval(appState.timerInterval);
+            appState.secondsRemaining = 900; // 15:00
+            updateTimerAndNoShowUI();
+
+            appState.timerInterval = setInterval(() => {
+                appState.secondsRemaining--;
+                if (appState.secondsRemaining <= 0) {
+                    clearInterval(appState.timerInterval);
+                    cancelMatch();
+                    return;
+                }
+                updateTimerAndNoShowUI();
+            }, 1000);
+        }
+
+        function fastForwardFiveMinutes() {
+            appState.secondsRemaining = Math.max(60, appState.secondsRemaining - 300);
+            updateTimerAndNoShowUI();
+            showToast('⏱️ +5 MINUTOS SIMULADOS • BOTÓN NO APARECIÓ HABILITADO');
+        }
+
+        function reportNoShow() {
+            if (appState.secondsRemaining > 600) return;
+            if (appState.timerInterval) clearInterval(appState.timerInterval);
+
+            const partner = appState.activePartner;
+            if (partner) {
+                const currentPct = parseInt(String(partner.punctuality).replace('%', ''), 10) || 98;
+                const penalizedPct = Math.max(0, currentPct - 15);
+                partner.punctuality = `${penalizedPct}%`;
+                if (!appState.dismissedUserIds.includes(partner.id)) {
+                    appState.dismissedUserIds.push(partner.id);
+                }
+                showToast(`⚠️ NO-SHOW REPORTADO: PUNTUALIDAD DE ${partner.name.toUpperCase()} BAJÓ A ${partner.punctuality}`);
+            }
+
+            appState.activePartner = null;
+            renderMatchCards();
+            goToScreen(2);
+        }
+
+        function sendQuickChip(text) {
+            appendChatBubble(text, 'me');
+            schedulePartnerContextualReply();
+        }
+
+        function handleSendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const text = (input.value || '').trim();
+            if (!text) return;
+            input.value = '';
+            appendChatBubble(text, 'me');
+            schedulePartnerContextualReply();
+        }
+
+        function appendChatBubble(text, sender) {
+            const chatBox = document.getElementById('chat-messages');
+            if (!chatBox) return;
+
+            const isMe = sender === 'me';
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex ${isMe ? 'justify-end' : 'justify-start'} animate-pop`;
+
+            const bubble = document.createElement('div');
+            bubble.className = isMe
+                ? 'max-w-[80%] bg-sup-green text-sup-cream border-2 border-sup-green shadow-hard-sm rounded-lg rounded-br-none px-3 py-2 text-xs font-medium'
+                : 'max-w-[80%] bg-white text-sup-green border-2 border-sup-green shadow-hard-sm rounded-lg rounded-bl-none px-3 py-2 text-xs font-medium';
+            bubble.textContent = text;
+
+            wrapper.appendChild(bubble);
+            chatBox.appendChild(wrapper);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function triggerPartnerReply(text) {
+            const indicator = document.getElementById('typing-indicator');
+            const typingName = document.getElementById('typing-name');
+            const partner = appState.activePartner;
+            if (!partner) return;
+
+            if (typingName) typingName.textContent = `${partner.name.toUpperCase()} ESTÁ ESCRIBIENDO...`;
+            if (indicator) indicator.classList.remove('hidden');
+
+            setTimeout(() => {
+                if (indicator) indicator.classList.add('hidden');
+                if (appState.currentScreen === 3 && appState.activePartner) {
+                    appendChatBubble(text, 'partner');
+                }
+            }, 950);
+        }
+
+        function schedulePartnerContextualReply() {
+            const partner = appState.activePartner;
+            if (!partner || !partner.replies) return;
+            const reply = partner.replies[appState.replyIndex % partner.replies.length];
+            appState.replyIndex++;
+            triggerPartnerReply(reply);
+        }
+
+        function cancelMatch() {
+            if (appState.timerInterval) clearInterval(appState.timerInterval);
+            appState.activePartner = null;
+            goToScreen(2);
+            showToast('MATCH CANCELADO');
+        }
+
+        // 9. PANTALLA 4: MODO VIAJE SEGURO, WHATSAPP Y ENCUESTA OBLIGATORIA PERSISTENTE
+        function confirmMeetup() {
+            if (appState.timerInterval) clearInterval(appState.timerInterval);
+            const partner = appState.activePartner;
+            if (!partner) return;
+
+            const originName = PLACES_AQP.origins[appState.originKey].name;
+            const destName = PLACES_AQP.destinations[appState.destKey].name;
+
+            // Guardar viaje activo pendiente de calificación (Regla vital persistente)
+            try {
+                localStorage.setItem(STORAGE_KEYS.PENDING_SURVEY, JSON.stringify({
+                    partnerId: partner.id,
+                    partnerName: partner.name,
+                    partnerUni: partner.uni,
+                    partnerAvatar: partner.avatar,
+                    originName,
+                    destName
+                }));
+            } catch (e) {}
+
+            document.getElementById('trip-route-summary').textContent = `${originName} → ${destName}`;
+            document.getElementById('trip-point-a').textContent = originName;
+            document.getElementById('trip-point-b').textContent = destName;
+
+            document.getElementById('trip-partner-avatar').src = partner.avatar;
+            document.getElementById('trip-partner-name').textContent = partner.name.toUpperCase();
+            document.getElementById('trip-partner-uni').textContent = `🎓 ESTUDIANTE VERIFICADO ${partner.uni}`;
+            document.getElementById('trip-partner-stats').textContent = `⭐ ${partner.rating} • ${partner.trips} VIAJES • ${partner.punctuality} PUNTUAL`;
+
+            const waMessage = [
+                `🛡️ *VÁMONOS CLUB AREQUIPA - VIAJE COMPARTIDO*`,
+                `• Pasajero: ${appState.userName}`,
+                `• Compañero verificado: ${partner.name} (🎓 ${partner.uni} • ⭐ ${partner.rating})`,
+                `• Ruta: ${originName} → ${destName}`,
+                `• Aplicativo: Uber / InDrive compartido`,
+                `• Enlace de viaje: [Pega aquí el link de tu Uber/InDrive]`
+            ].join('\n');
+
+            document.getElementById('whatsapp-preview-text').textContent = waMessage;
+            goToScreen(4);
+            showToast('¡VIAJE INICIADO! PUEDES COMPARTIR TU RUTA POR WHATSAPP');
+        }
+
+        function copyWhatsAppMessage() {
+            const text = document.getElementById('whatsapp-preview-text').textContent;
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            showToast('DATOS COPIADOS AL PORTAPAPELES');
+        }
+
+        function shareToWhatsApp() {
+            const text = encodeURIComponent(document.getElementById('whatsapp-preview-text').textContent);
+            window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
+        }
+
+        function openRatingModal(pendingData = null, isEnforced = false) {
+            const data = pendingData || (appState.activePartner ? {
+                partnerName: appState.activePartner.name,
+                partnerUni: appState.activePartner.uni,
+                partnerAvatar: appState.activePartner.avatar
+            } : null);
+
+            if (!data) {
+                goToScreen(1);
+                return;
+            }
+
+            document.getElementById('rating-partner-avatar').src = data.partnerAvatar;
+            document.getElementById('rating-partner-name').textContent = data.partnerName.toUpperCase();
+            document.getElementById('rating-partner-uni').textContent = `🎓 ${data.partnerUni} VERIFICADO`;
+            document.getElementById('rating-comment-input').value = '';
+
+            const alertBanner = document.getElementById('pending-survey-alert');
+            if (alertBanner) {
+                if (isEnforced) {
+                    alertBanner.classList.remove('hidden');
+                } else {
+                    alertBanner.classList.add('hidden');
+                }
+            }
+
+            setRatingStars(5);
+            document.getElementById('rating-modal').classList.remove('hidden');
+        }
+
+        function setRatingStars(count) {
+            appState.selectedRating = count;
+            const labels = {
+                1: '⭐ MUY MALA EXPERIENCIA',
+                2: '⭐⭐ REGULAR / IMPUNTUAL',
+                3: '⭐⭐⭐ ACEPTABLE',
+                4: '⭐⭐⭐⭐ MUY BUEN COMPAÑERO',
+                5: '⭐⭐⭐⭐⭐ ¡EXCELENTE COMPAÑERO!'
+            };
+            document.querySelectorAll('.star-btn').forEach(btn => {
+                const val = parseInt(btn.getAttribute('data-star'), 10);
+                if (val <= count) {
+                    btn.className = 'star-btn w-10 h-10 rounded-md border-2 border-sup-green bg-sup-orange text-white font-display text-base shadow-hard-sm transition-transform active:translate-y-0.5';
+                } else {
+                    btn.className = 'star-btn w-10 h-10 rounded-md border-2 border-sup-green bg-white text-sup-green/40 font-display text-base shadow-hard-sm transition-transform active:translate-y-0.5';
+                }
+            });
+            document.getElementById('rating-star-label').textContent = labels[count] || labels[5];
+        }
+
+        function appendQuickReviewTag(tag) {
+            const textarea = document.getElementById('rating-comment-input');
+            const current = (textarea.value || '').trim();
+            textarea.value = current ? `${current}. ${tag}` : tag;
+        }
+
+        function submitTripSurvey() {
+            try {
+                localStorage.removeItem(STORAGE_KEYS.PENDING_SURVEY);
+            } catch (e) {}
+
+            document.getElementById('rating-modal').classList.add('hidden');
+            document.getElementById('pending-survey-alert').classList.add('hidden');
+            appState.activePartner = null;
+            goToScreen(1);
+            showToast(`¡GRACIAS! CALIFICACIÓN (${appState.selectedRating}⭐) GUARDADA`);
+        }
+
+        function checkPendingSurveyEnforcement() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEYS.PENDING_SURVEY);
+                if (!raw) return false;
+                const pending = JSON.parse(raw);
+                if (pending && pending.partnerName) {
+                    openRatingModal(pending, true);
+                    return true;
+                }
+            } catch (e) {}
+            return false;
+        }
+
+        // 10. INICIALIZACIÓN AL CARGAR LA PÁGINA
+        window.addEventListener('DOMContentLoaded', () => {
+            try {
+                const savedUser = localStorage.getItem(STORAGE_KEYS.USER_SESSION);
+                if (savedUser) {
+                    const parsed = JSON.parse(savedUser);
+                    if (parsed && parsed.userName) {
+                        appState.userName = parsed.userName;
+                        appState.userUni = parsed.userUni || 'UTP';
+                        appState.userEmail = parsed.userEmail || '';
+                        appState.userGender = parsed.userGender || 'M';
+                        activateAppShell();
+                    }
+                }
+            } catch (e) {}
+        });
+    </script>
+</body>
+</html>

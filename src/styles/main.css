@@ -1,0 +1,253 @@
+:root {
+    --sup-cream: #E7DEC8;
+    --sup-green: #063120;
+    --sup-orange: #FA4A19;
+}
+
+body {
+    font-family: 'Space Grotesk', sans-serif;
+    background-color: #063120;
+    background-image: radial-gradient(#0E4A32 1.25px, transparent 1.25px);
+    background-size: 22px 22px;
+    color: var(--sup-green);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Patrón de Ajedrez (Checkerboard) estilo SUPClub */
+.checkerboard-strip {
+    height: 12px;
+    width: 100%;
+    background-color: var(--sup-cream);
+    background-image:
+        linear-gradient(45deg, var(--sup-green) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--sup-green) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--sup-green) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--sup-green) 75%);
+    background-size: 12px 12px;
+    background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+    border-top: 2px solid var(--sup-green);
+    border-bottom: 2px solid var(--sup-green);
+    transition: height 0.25s ease, background-size 0.25s ease;
+}
+
+.window-topbar.app-mode .checkerboard-strip {
+    height: 8px;
+    background-size: 8px 8px;
+    background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+    border-bottom-width: 1.5px;
+}
+
+.window-topbar.app-mode .topbar-inner {
+    padding: 0.45rem 0.65rem;
+    gap: 0.4rem;
+}
+
+.window-topbar.app-mode .window-dots {
+    display: none;
+}
+
+@media (min-width: 390px) {
+    .window-topbar.app-mode .window-dots {
+        display: flex;
+        gap: 0.25rem;
+    }
+    .window-topbar.app-mode .window-dots span {
+        width: 0.6rem;
+        height: 0.6rem;
+        border-width: 1.5px;
+    }
+}
+
+.window-topbar.app-mode .brand-wordmark {
+    font-size: 1.05rem;
+}
+
+.window-topbar.app-mode .brand-script {
+    font-size: 0.95rem;
+}
+
+.workspace-wrapper {
+    width: 100%;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+    .workspace-wrapper {
+        padding: 1.5rem;
+        gap: 1rem;
+    }
+}
+
+.window-topbar {
+    width: 100%;
+    max-width: 820px;
+    background-color: var(--sup-cream);
+    border: 3px solid var(--sup-green);
+    border-radius: 10px;
+    box-shadow: 5px 5px 0px var(--sup-orange), 8px 8px 0px #02180F;
+    overflow: hidden;
+    transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.window-topbar.app-mode {
+    max-width: 430px;
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+    box-shadow: 8px 8px 0px var(--sup-orange);
+}
+
+.landing-shell {
+    width: 100%;
+    max-width: 820px;
+    background-color: var(--sup-cream);
+    border: 3px solid var(--sup-green);
+    border-radius: 12px;
+    box-shadow: 7px 7px 0px var(--sup-orange), 10px 10px 0px #02180F;
+    position: relative;
+    overflow: hidden;
+}
+
+.app-shell {
+    width: 100%;
+    max-width: 430px;
+    height: 82dvh;
+    min-height: 620px;
+    max-height: 780px;
+    background-color: var(--sup-cream);
+    border: 3px solid var(--sup-green);
+    border-radius: 0 0 14px 14px;
+    box-shadow: 8px 8px 0px var(--sup-orange);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.btn-brutal {
+    border: 2.5px solid var(--sup-green);
+    box-shadow: 4px 4px 0px var(--sup-green);
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+}
+
+.btn-brutal:active {
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0px var(--sup-green);
+}
+
+.btn-brutal-sm {
+    border: 2px solid var(--sup-green);
+    box-shadow: 2px 2px 0px var(--sup-green);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.btn-brutal-sm:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px var(--sup-green);
+}
+
+/* Filtro cálido retro para armonizar OpenStreetMap con el fondo crema #E7DEC8 */
+/* isolation: isolate encierra los z-index internos de Leaflet (400-1000) para que no tapen modales */
+.retro-map-tiles {
+    isolation: isolate;
+    z-index: 1;
+}
+
+#map-screen-1 {
+    position: relative;
+    isolation: isolate;
+    z-index: 0;
+}
+
+.retro-map-tiles .leaflet-tile-pane {
+    filter: sepia(26%) contrast(104%) saturate(85%) brightness(97%);
+}
+
+.leaflet-control-attribution {
+    font-size: 9px !important;
+    background: rgba(231, 222, 200, 0.9) !important;
+    color: #063120 !important;
+    border-top: 1px solid #063120;
+    border-left: 1px solid #063120;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.95) translateY(8px);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.animate-pop {
+    animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes taxiDriveLoop {
+    0% {
+        left: 6%;
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    10% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    88% {
+        left: 94%;
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        left: 94%;
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+}
+
+@keyframes roadDashFlow {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: -24px 0;
+    }
+}
+
+.taxi-loop-mover {
+    position: absolute;
+    top: 50%;
+    left: 6%;
+    animation: taxiDriveLoop 4.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.road-track-line {
+    background-image: repeating-linear-gradient(
+        to right,
+        #063120 0px,
+        #063120 10px,
+        transparent 10px,
+        transparent 18px
+    );
+    animation: roadDashFlow 1.2s linear infinite;
+}
+

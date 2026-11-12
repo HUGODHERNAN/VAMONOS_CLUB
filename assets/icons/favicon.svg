@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect x="4" y="4" width="120" height="120" rx="26" fill="#E7DEC8" stroke="#063120" stroke-width="6"/>
+  <rect x="12" y="12" width="104" height="104" rx="20" fill="#063120"/>
+  <!-- Checkerboard top bar -->
+  <rect x="20" y="22" width="88" height="12" fill="#FA4A19"/>
+  <rect x="20" y="22" width="11" height="12" fill="#E7DEC8"/>
+  <rect x="42" y="22" width="11" height="12" fill="#E7DEC8"/>
+  <rect x="64" y="22" width="11" height="12" fill="#E7DEC8"/>
+  <rect x="86" y="22" width="11" height="12" fill="#E7DEC8"/>
+  <!-- Route Pin -->
+  <circle cx="64" cy="70" r="26" fill="#FA4A19" stroke="#E7DEC8" stroke-width="4"/>
+  <path d="M64 52 C55 52 48 59 48 68 C48 79 64 92 64 92 C64 92 80 79 80 68 C80 59 73 52 64 52 Z" fill="#E7DEC8"/>
+  <circle cx="64" cy="68" r="6" fill="#063120"/>
+</svg>
+
