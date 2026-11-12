@@ -29,16 +29,16 @@ DECLARE
     v_mine public.ride_intents%ROWTYPE;
     v_my_profile public.profiles%ROWTYPE;
 BEGIN
-    SELECT * INTO v_mine
-    FROM public.ride_intents
-    WHERE id = p_intent_id
-      AND user_id = auth.uid();
+    SELECT ri.* INTO v_mine
+    FROM public.ride_intents ri
+    WHERE ri.id = p_intent_id
+      AND ri.user_id = auth.uid();
 
     IF NOT FOUND OR v_mine.status <> 'searching' OR v_mine.expires_at <= NOW() THEN
         RETURN;
     END IF;
 
-    SELECT * INTO v_my_profile FROM public.profiles WHERE id = v_mine.user_id;
+    SELECT p.* INTO v_my_profile FROM public.profiles p WHERE p.id = v_mine.user_id;
 
     RETURN QUERY
     SELECT
