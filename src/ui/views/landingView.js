@@ -48,22 +48,16 @@ export function setupLandingView({ onSwitchMode, onEnterApp, onForgotPassword, o
             regBox?.classList.add('hidden');
             if (loginChevron) loginChevron.textContent = '▲';
             if (regChevron) regChevron.textContent = '▼';
-            loginTabBtn?.classList.add('bg-sup-creamDark');
-            regTabBtn?.classList.remove('bg-sup-creamDark');
         } else if (mode === 'register') {
             regBox?.classList.remove('hidden');
             loginBox?.classList.add('hidden');
             if (regChevron) regChevron.textContent = '▲';
             if (loginChevron) loginChevron.textContent = '▼';
-            regTabBtn?.classList.add('bg-sup-creamDark');
-            loginTabBtn?.classList.remove('bg-sup-creamDark');
         } else {
             loginBox?.classList.add('hidden');
             regBox?.classList.add('hidden');
             if (loginChevron) loginChevron.textContent = '▼';
             if (regChevron) regChevron.textContent = '▼';
-            loginTabBtn?.classList.remove('bg-sup-creamDark');
-            regTabBtn?.classList.remove('bg-sup-creamDark');
         }
     }
 
