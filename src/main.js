@@ -409,6 +409,12 @@ async function bootstrap() {
             appStore.setState({ authMode: nextMode, pendingConfirmEmail: '' });
             return nextMode;
         },
+        async onGoogleAuth() {
+            const res = await authService.signInWithGoogle();
+            if (!res.ok) {
+                showToast(res.error);
+            }
+        },
         async onEnterApp({ loginEmail, loginPassword, regName, regGender, regPhone, regEmail, regPassword }) {
             const state = appStore.getState();
             const res = await authService.startAuth({

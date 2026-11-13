@@ -59,14 +59,43 @@ export const authService = {
             if (supabase) {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session?.user) {
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('*')
-                        .eq('id', session.user.id)
-                        .single();
+                    let profile = null;
+                    for (let attempt = 0; attempt < 4; attempt++) {
+                        const { data } = await supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', session.user.id)
+                            .maybeSingle();
+                        if (data) {
+                            profile = data;
+                            break;
+                        }
+                        await new Promise(r => setTimeout(r, 150));
+                    }
+
                     if (profile) {
                         return { mode: 'cloud', profile: mapProfileRowToState(profile, session.user.email) };
                     }
+
+                    const detectedUni = detectUniFromEmail(session.user.email);
+                    const fallbackName = session.user.user_metadata?.full_name ||
+                        session.user.user_metadata?.name ||
+                        session.user.user_metadata?.short_name ||
+                        (session.user.email ? session.user.email.split('@')[0] : 'Pasajero');
+                    return {
+                        mode: 'cloud',
+                        profile: {
+                            userId: session.user.id,
+                            userName: fallbackName,
+                            userGender: 'M',
+                            userEmail: session.user.email || '',
+                            userPhone: '',
+                            userUni: detectedUni || 'AQP',
+                            uniVerified: Boolean(detectedUni),
+                            userStats: { rating: 5.0, punctuality: 100, trips: 0 },
+                            pendingSurveyTripId: null
+                        }
+                    };
                 }
                 return { mode: 'cloud', profile: null };
             }
@@ -224,6 +253,38 @@ export const authService = {
         }
 
         return { ok: true, requiresEmailConfirmation: true, email: validated.userEmail };
+    },
+
+    /**
+     * Signs in or registers directly using Google OAuth / Google Workspace.
+     */
+    async signInWithGoogle() {
+        if (!isSupabaseConfigured()) {
+            return { ok: false, error: 'INICIA SESIÓN CON GOOGLE REQUIERE SUPABASE CONECTADO' };
+        }
+        const supabase = await getSupabaseClient();
+        if (!supabase) return { ok: false, error: 'NO SE PUDO CONECTAR CON SUPABASE' };
+
+        const redirectTo = getAppRedirectUrl() || (typeof window !== 'undefined' ? window.location.origin : undefined);
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo,
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'select_account'
+                }
+            }
+        });
+
+        if (error) {
+            return { ok: false, error: mapSupabaseAuthError(error.message) };
+        }
+
+        if (data?.url && typeof window !== 'undefined') {
+            window.location.href = data.url;
+        }
+        return { ok: true, data };
     },
 
     /**

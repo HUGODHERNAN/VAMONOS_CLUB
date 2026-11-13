@@ -1,6 +1,7 @@
 import { detectUniFromEmail } from '../../domain/auth.js';
 
-export function setupLandingView({ onSwitchMode, onEnterApp, onForgotPassword, onSaveNewPassword }) {
+export function setupLandingView({ onSwitchMode, onEnterApp, onGoogleAuth, onForgotPassword, onSaveNewPassword }) {
+    const googleAuthBtn = document.getElementById('google-auth-btn');
     const loginTabBtn = document.getElementById('tab-login-btn');
     const regTabBtn = document.getElementById('tab-register-btn');
     const loginChevron = document.getElementById('login-chevron');
@@ -109,6 +110,18 @@ export function setupLandingView({ onSwitchMode, onEnterApp, onForgotPassword, o
             }
         }
     }
+
+    googleAuthBtn?.addEventListener('click', async () => {
+        if (!onGoogleAuth) return;
+        googleAuthBtn.disabled = true;
+        googleAuthBtn.classList.add('opacity-75');
+        try {
+            await onGoogleAuth();
+        } finally {
+            googleAuthBtn.disabled = false;
+            googleAuthBtn.classList.remove('opacity-75');
+        }
+    });
 
     loginTabBtn?.addEventListener('click', () => toggleMode('login'));
     regTabBtn?.addEventListener('click', () => toggleMode('register'));
