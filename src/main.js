@@ -870,15 +870,24 @@ async function bootstrap() {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
+    const hasOAuthHash = typeof window !== 'undefined' && window.location.hash && 
+        (window.location.hash.includes('access_token') || window.location.hash.includes('refresh_token'));
+
     // Hydrate saved user session (Supabase Cloud or Local Demo)
     const restored = await authService.restoreSession();
     if (restored.profile) {
+        // Solución recomendada: Si acabamos de validar con Google OAuth, refrescamos a URL limpia.
+        // Esto elimina cualquier distorsión de escala del navegador móvil y carga la sesión nativa 1:1.
+        if (hasOAuthHash) {
+            window.location.replace(window.location.origin + window.location.pathname);
+            return;
+        }
         applyProfileAndActivate(restored.profile);
     } else {
         showScreen(0);
     }
 
-    // Limpiar hash de OAuth (access_token / refresh_token) para que el navegador móvil quede en URL limpia
+    // Limpiar hash de OAuth en caso de que quede residual
     if (window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('refresh_token'))) {
         window.history.replaceState({}, document.title, window.location.pathname);
         enforceMobileViewport();
