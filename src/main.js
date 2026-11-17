@@ -883,8 +883,6 @@ async function bootstrap() {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    setupMobileViewportLock();
-
     if (isCloudMode) {
         await authService.subscribeToAuthChanges(({ event, profile }) => {
             if (event === 'PASSWORD_RECOVERY') {
@@ -906,37 +904,11 @@ async function bootstrap() {
             }
         });
     }
-}
-
-function setupMobileViewportLock() {
-    if (typeof window === 'undefined') return;
-
-    // 1. Prevenir gestos de escala de iOS Safari / Chrome
-    document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
-    document.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
-    document.addEventListener('gestureend', (e) => e.preventDefault(), { passive: false });
-
-    // 2. Prevenir pellizco multitáctil si se origina fuera de un mapa interactivo
-    document.addEventListener('touchmove', (e) => {
-        if (e.touches && e.touches.length > 1) {
-            const isInsideMap = e.target.closest('#map') || e.target.closest('#route-preview-map') || e.target.closest('.leaflet-container');
-            if (!isInsideMap) {
-                e.preventDefault();
-            }
+    window.addEventListener('resize', () => {
+        if (appStore.getState().currentScreen === 1) {
+            mapService.invalidateSize();
         }
-    }, { passive: false });
-
-    // 3. Prevenir doble toque rápido que activa zoom automático en botones o cabeceras
-    let lastTouchTime = 0;
-    document.addEventListener('touchend', (e) => {
-        const isInsideMap = e.target.closest('#map') || e.target.closest('#route-preview-map') || e.target.closest('.leaflet-container');
-        if (isInsideMap) return;
-        const now = Date.now();
-        if (now - lastTouchTime <= 320) {
-            e.preventDefault();
-        }
-        lastTouchTime = now;
-    }, { passive: false });
+    });
 }
 
 window.addEventListener('DOMContentLoaded', bootstrap);
