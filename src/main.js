@@ -345,8 +345,14 @@ async function bootstrap() {
             userId,
             onIncomingRequest(details) {
                 clearIncomingTimer();
-                appStore.setState({ incomingRequest: details });
-                incomingRequestModal.open(details);
+                const state = appStore.getState();
+                const enhanced = {
+                    ...details,
+                    originCoords: details.originCoords || state.originPlace?.coords,
+                    destCoords: details.destCoords || state.destPlace?.coords
+                };
+                appStore.setState({ incomingRequest: enhanced });
+                incomingRequestModal.open(enhanced);
                 notificationService.notify({
                     title: `🚕 ${details.requesterName} quiere compartir taxi`,
                     body: `Ruta: ${details.originName} → ${details.destName}`,

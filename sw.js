@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vamonos-club-v25';
+const CACHE_NAME = 'vamonos-club-v26';
 
 const APP_SHELL_ASSETS = [
     './',

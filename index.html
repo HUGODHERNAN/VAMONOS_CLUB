@@ -38,7 +38,7 @@
         rel="stylesheet">
 
     <!-- Estilos Modulares SUPClub -->
-    <link rel="stylesheet" href="./src/styles/main.css?v=25">
+    <link rel="stylesheet" href="./src/styles/main.css?v=26">
 </head>
 
 <body>
@@ -678,10 +678,10 @@
 
             <!-- MODAL 4: SOLICITUD ENTRANTE EN TIEMPO REAL (PARA QUIEN RECIBE INVITACIÓN) -->
             <div id="incoming-request-modal"
-                class="hidden absolute inset-0 z-[1200] bg-sup-green/85 backdrop-blur-[2px] flex items-center justify-center p-3.5 sm:p-4">
+                class="hidden absolute inset-0 z-[1200] bg-sup-green/85 backdrop-blur-[2px] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
                 <div
-                    class="bg-sup-cream border-[3px] border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop">
-                    <div class="px-4 py-2.5 bg-sup-orange text-white flex items-center justify-between">
+                    class="bg-sup-cream border-[3px] border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop my-auto max-h-[94vh] flex flex-col">
+                    <div class="px-4 py-2 bg-sup-orange text-white flex items-center justify-between shrink-0">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
                             <span class="font-display text-xs uppercase tracking-wider">¡ALGUIEN QUIERE
@@ -690,14 +690,14 @@
                         <span id="incoming-countdown-badge"
                             class="bg-sup-green text-sup-cream font-display text-xs px-2 py-0.5 rounded-sm border border-white">60s</span>
                     </div>
-                    <div class="checkerboard-strip"></div>
+                    <div class="checkerboard-strip shrink-0"></div>
 
-                    <div class="p-4 space-y-3.5 text-center">
-                        <div class="flex flex-col items-center space-y-1.5">
+                    <div class="p-3.5 sm:p-4 space-y-3 text-center overflow-y-auto">
+                        <div class="flex flex-col items-center space-y-1">
                             <img id="inc-partner-avatar" src="" alt="Solicitante"
-                                class="w-16 h-16 rounded-xl object-cover border-[3px] border-sup-green shadow-hard-sm">
+                                class="w-14 h-14 rounded-xl object-cover border-[3px] border-sup-green shadow-hard-sm">
                             <h3 id="inc-partner-name"
-                                class="font-display text-lg uppercase text-sup-green leading-tight">VALERIA R.</h3>
+                                class="font-display text-base uppercase text-sup-green leading-tight">VALERIA R.</h3>
                             <span id="inc-partner-uni"
                                 class="inline-block bg-white border border-sup-green text-sup-green text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm">
                                 🎓 ESTUDIANTE VERIFICADO UTP
@@ -707,10 +707,23 @@
                         </div>
 
                         <div
-                            class="bg-white border-2 border-sup-green shadow-hard-sm rounded-lg p-3 text-left space-y-1">
-                            <span class="block text-[9px] font-bold uppercase text-sup-orange">RUTA PROPUESTA:</span>
+                            class="bg-white border-2 border-sup-green shadow-hard-sm rounded-lg p-2.5 sm:p-3 text-left space-y-1.5">
+                            <div class="flex items-center justify-between">
+                                <span class="block text-[9px] font-bold uppercase text-sup-orange tracking-wide">RUTA PROPUESTA:</span>
+                                <span id="inc-route-stats"
+                                    class="text-[9px] font-bold bg-sup-cream border border-sup-green text-sup-green px-1.5 py-0.5 rounded-sm">TRAZANDO...</span>
+                            </div>
                             <p id="inc-route-summary" class="text-xs font-bold uppercase text-sup-green leading-snug">
                                 UTP → CERRO COLORADO</p>
+
+                            <!-- MAPA DE PREVISUALIZACIÓN DE RUTA ENTRANTE -->
+                            <div class="relative w-full h-32 sm:h-36 rounded-lg border-2 border-sup-green overflow-hidden shadow-inner retro-map-tiles mt-1">
+                                <div id="incoming-request-map" class="w-full h-full"></div>
+                                <div
+                                    class="absolute bottom-1 right-1 z-[400] bg-white/95 border border-sup-green text-[8px] font-black px-1.5 py-0.5 rounded text-sup-green shadow-xs flex items-center gap-1">
+                                    <span>🗺️</span> <span>RUTA COMPARTIDA</span>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 pt-1">
@@ -1255,7 +1268,7 @@
         </div>
     </div>
 
-    <script type="module" src="./src/main.js?v=25"></script>
+    <script type="module" src="./src/main.js?v=26"></script>
 </body>
 
 </html>
