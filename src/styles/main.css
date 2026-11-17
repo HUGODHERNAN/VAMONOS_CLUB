@@ -251,3 +251,67 @@ body {
     animation: roadDashFlow 1.2s linear infinite;
 }
 
+/* ========================================================================== */
+/* ESCÁNER DE RADAR EN VIVO (ANIMACIONES DE SONAR Y ONDAS CONCÉNTRICAS)       */
+/* ========================================================================== */
+
+@keyframes sonarPulse {
+    0% {
+        transform: scale(0.65);
+        opacity: 0.85;
+    }
+    50% {
+        opacity: 0.45;
+    }
+    100% {
+        transform: scale(2.3);
+        opacity: 0;
+    }
+}
+
+@keyframes radarSweepSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.radar-sonar-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid #063120;
+    pointer-events: none;
+    animation: sonarPulse 3s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+.radar-sonar-ring-1 {
+    animation-delay: 0s;
+}
+
+.radar-sonar-ring-2 {
+    animation-delay: 1s;
+}
+
+.radar-sonar-ring-3 {
+    animation-delay: 2s;
+}
+
+.radar-sweep-beam {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: conic-gradient(
+        from 0deg,
+        rgba(250, 74, 25, 0.35) 0deg,
+        rgba(6, 49, 32, 0.15) 60deg,
+        transparent 120deg,
+        transparent 360deg
+    );
+    animation: radarSweepSpin 3.5s linear infinite;
+    pointer-events: none;
+}
+
+

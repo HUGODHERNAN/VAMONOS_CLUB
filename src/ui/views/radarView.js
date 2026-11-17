@@ -33,6 +33,13 @@ export function setupRadarView({ getState, onBackToMap, onToggleWomenFilter, onD
         const resetBtn = event.target.closest('[data-action="reset-radar"]');
         if (resetBtn) {
             onResetRadar();
+            return;
+        }
+
+        const backMapBtn = event.target.closest('[data-action="back-map"]');
+        if (backMapBtn) {
+            onBackToMap();
+            return;
         }
     });
 
@@ -75,13 +82,58 @@ export function setupRadarView({ getState, onBackToMap, onToggleWomenFilter, onD
 
         if (candidates.length === 0) {
             container.innerHTML = `
-                <div class="bg-white border-2 border-sup-green shadow-hard rounded-lg p-5 text-center space-y-3 my-4">
-                    <div class="text-2xl">📡</div>
-                    <h3 class="font-display text-sm uppercase text-sup-green">NO QUEDAN MÁS COMPAÑEROS EN ESTE BLOQUE</h3>
-                    <p class="text-xs font-medium text-sup-green/75">Vuelve a cargar el radar o cambia el filtro de salida.</p>
-                    <button type="button" data-action="reset-radar" class="btn-brutal bg-sup-orange text-white font-display text-xs uppercase px-4 py-2 rounded-md">
-                        ↻ RECARGAR RADAR
-                    </button>
+                <div class="bg-white border-2 border-sup-green shadow-hard rounded-xl p-5 sm:p-6 text-center space-y-4 my-2 sm:my-3 animate-pop overflow-hidden relative">
+                    <!-- CONTENEDOR VISUAL DEL RADAR Y ONDAS DE SONAR -->
+                    <div class="relative w-36 h-36 mx-auto flex items-center justify-center my-1 select-none">
+                        <!-- Ondas concéntricas animadas -->
+                        <div class="radar-sonar-ring radar-sonar-ring-1 border-sup-orange/70"></div>
+                        <div class="radar-sonar-ring radar-sonar-ring-2 border-sup-green/60"></div>
+                        <div class="radar-sonar-ring radar-sonar-ring-3 border-sup-orange/50"></div>
+
+                        <!-- Círculo base del radar con cuadrícula y barrido -->
+                        <div class="relative w-28 h-28 rounded-full border-2 border-sup-green bg-sup-cream/50 overflow-hidden flex items-center justify-center shadow-inner">
+                            <!-- Haz de barrido giratorio 360° -->
+                            <div class="radar-sweep-beam"></div>
+
+                            <!-- Líneas de retícula de mira -->
+                            <div class="absolute inset-x-0 top-1/2 border-t border-sup-green/20"></div>
+                            <div class="absolute inset-y-0 left-1/2 border-l border-sup-green/20"></div>
+                            <div class="w-16 h-16 rounded-full border border-sup-green/30 absolute"></div>
+
+                            <!-- Baliza central con antena -->
+                            <div class="relative z-10 w-9 h-9 rounded-full bg-sup-orange border-2 border-sup-green text-white flex items-center justify-center text-sm shadow-sm animate-pulse">
+                                📡
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TEXTOS DE ESTADO EN VIVO -->
+                    <div class="space-y-1.5 max-w-sm mx-auto">
+                        <div class="inline-flex items-center gap-1.5 bg-[#1E7A50]/15 border border-[#1E7A50] px-2.5 py-0.5 rounded-full mb-1">
+                            <span class="w-2 h-2 rounded-full bg-[#1E7A50] animate-ping"></span>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-[#1E7A50]">
+                                ESCANEO ACTIVO EN VIVO
+                            </span>
+                        </div>
+                        <h3 class="font-display text-sm sm:text-base uppercase text-sup-green tracking-tight">
+                            Buscando compañeros en tu ruta...
+                        </h3>
+                        <p class="text-[11px] sm:text-xs font-medium text-sup-green/80 leading-relaxed">
+                            Rastreo continuo en un radio de <strong>1000m</strong>. En cuanto otro estudiante o vecino active su viaje, aparecerá aquí automáticamente.
+                        </p>
+                    </div>
+
+                    <!-- PIE DE ACCIONES SECUNDARIAS -->
+                    <div class="flex items-center justify-center gap-2 pt-2 border-t border-sup-green/15 text-[11px] font-bold">
+                        <button type="button" data-action="back-map" class="text-sup-green/75 hover:text-sup-orange uppercase transition-colors px-2 py-1">
+                            ← Cambiar ruta
+                        </button>
+                        <span class="text-sup-green/30">•</span>
+                        <button type="button" data-action="reset-radar" class="text-sup-orange hover:underline uppercase transition-colors px-2 py-1 flex items-center gap-1">
+                            <span>↻</span>
+                            <span>Buscar ahora mismo</span>
+                        </button>
+                    </div>
                 </div>
             `;
             return;

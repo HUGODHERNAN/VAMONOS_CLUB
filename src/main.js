@@ -758,6 +758,7 @@ async function bootstrap() {
     const radarView = setupRadarView({
         getState: () => appStore.getState(),
         onBackToMap() {
+            clearRadarRefreshTimer();
             routePreviewModal.close();
             showScreen(1);
         },
@@ -892,6 +893,19 @@ async function bootstrap() {
             if (st.currentScreen === 0 && st.pendingConfirmEmail) {
                 const next = await authService.restoreSession();
                 handleCloudProfileArrival(next.profile);
+            } else if (st.currentScreen === 2 && st.activeIntentId && isCloudMode) {
+                const refreshed = await radarService.refreshMatches({
+                    intentId: st.activeIntentId,
+                    dismissedUserIds: st.dismissedUserIds
+                });
+                if (refreshed.ok) {
+                    const hadNone = (st.candidates || []).length === 0;
+                    appStore.setState({ candidates: refreshed.candidates });
+                    radarView.render();
+                    if (hadNone && refreshed.candidates.length > 0) {
+                        showToast('🚕 ¡NUEVO COMPAÑERO DETECTADO EN TU RUTA!');
+                    }
+                }
             }
         });
     }
