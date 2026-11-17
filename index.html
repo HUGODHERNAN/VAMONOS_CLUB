@@ -38,7 +38,7 @@
         rel="stylesheet">
 
     <!-- Estilos Modulares SUPClub -->
-    <link rel="stylesheet" href="./src/styles/main.css?v=24">
+    <link rel="stylesheet" href="./src/styles/main.css?v=25">
 </head>
 
 <body>
@@ -789,118 +789,187 @@
 
             <!-- PANTALLA 1: MAPA DE AREQUIPA Y BUSCADOR DE RUTA -->
             <section id="screen-1" class="hidden flex-col h-full w-full overflow-hidden">
-                <div class="relative p-3 sm:p-3.5 bg-sup-cream border-b-2 border-sup-green space-y-2 shrink-0 z-20">
-                    <div class="grid grid-cols-1 gap-2">
-                        <div class="flex items-center gap-2">
-                            <div
-                                class="flex-1 flex items-center gap-2 bg-white border-2 border-sup-green shadow-hard-sm rounded-lg px-3 py-2 min-w-0">
-                                <span
-                                    class="w-3 h-3 rounded-full bg-sup-orange border-2 border-sup-green shrink-0"></span>
-                                <label for="origin-input"
-                                    class="text-[11px] font-bold uppercase text-sup-green/75 shrink-0">SALIDA:</label>
-                                <input type="text" id="origin-input" value="UTP - AV. PARRA" autocomplete="off"
-                                    placeholder="Escribe calle, UTP, Mall o elige en mapa..."
-                                    class="w-full bg-transparent text-xs sm:text-sm font-bold uppercase text-sup-green placeholder-sup-green/45 focus:outline-none truncate">
+                <div class="relative p-2.5 sm:p-3 bg-sup-cream border-b-2 border-sup-green shrink-0 z-20">
+                    <!-- Tarjeta Principal de Ruta estilo Neo-Brutalista -->
+                    <div class="bg-white border-2 border-sup-green shadow-hard rounded-2xl p-3 sm:p-3.5 relative">
+                        <div class="flex items-center gap-3">
+                            <!-- Indicador de Ruta Vertical (Círculo rojo -> Línea -> Cuadrado verde) -->
+                            <div class="flex flex-col items-center justify-between self-stretch py-1 shrink-0">
+                                <span class="w-3.5 h-3.5 rounded-full bg-sup-orange border-2 border-sup-green shrink-0 shadow-sm"></span>
+                                <div class="w-0.5 flex-1 bg-sup-green/35 my-1"></div>
+                                <span class="w-3.5 h-3.5 rounded-sm bg-sup-green shrink-0 shadow-sm"></span>
                             </div>
-                            <button type="button" id="pick-origin-map-btn" title="Elegir punto de salida en el mapa"
-                                class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white text-sup-green px-3 py-2.5 rounded-lg text-xs font-bold uppercase shrink-0 flex items-center justify-center">
-                                <i class="fa-solid fa-map-pin text-sm"></i>
-                            </button>
-                            <button type="button" id="gps-locate-btn" title="Centrar radio 1000m en mi GPS actual"
-                                class="btn-brutal-sm bg-sup-green hover:bg-sup-orange text-sup-cream px-3 py-2.5 rounded-lg text-xs font-bold uppercase shrink-0 flex items-center gap-1.5">
-                                <i class="fa-solid fa-crosshairs text-xs"></i>
-                                <span>GPS</span>
-                            </button>
+
+                            <!-- Campos de Salida y Destino con Divisor -->
+                            <div class="flex-1 min-w-0">
+                                <!-- Fila: Punto de Salida -->
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="min-w-0 flex-1">
+                                        <label for="origin-input" class="block text-[10px] font-bold uppercase tracking-wider text-[#3D6A58] leading-tight mb-0.5">
+                                            PUNTO DE SALIDA
+                                        </label>
+                                        <input type="text" id="origin-input" value="UTP – AV. PARRA" autocomplete="off"
+                                            placeholder="Escribe calle o elige en mapa..."
+                                            class="w-full bg-transparent text-sm sm:text-base font-bold text-sup-green uppercase focus:outline-none truncate">
+                                    </div>
+                                    <button type="button" id="gps-locate-btn" title="Centrar radio 1000m en mi GPS actual"
+                                        class="btn-brutal-sm bg-sup-green hover:bg-sup-orange text-sup-cream px-3 py-1.5 rounded-full text-xs font-bold uppercase shrink-0 flex items-center gap-1.5 shadow-sm">
+                                        <i class="fa-solid fa-crosshairs text-sup-orange text-xs"></i>
+                                        <span>GPS</span>
+                                    </button>
+                                </div>
+
+                                <!-- Divisor con Botón de Intercambio (Swap ⇅) -->
+                                <div class="relative flex items-center justify-center my-1.5">
+                                    <div class="w-full border-t border-sup-green/20"></div>
+                                    <button type="button" id="swap-route-btn" title="Intercambiar salida y destino"
+                                        class="absolute right-2 w-6 h-6 rounded-full bg-sup-cream border border-sup-green shadow-sm flex items-center justify-center text-sup-green hover:bg-sup-orange hover:text-white transition-colors text-[10px]">
+                                        <i class="fa-solid fa-arrows-up-down"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Fila: Destino -->
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="min-w-0 flex-1">
+                                        <label for="dest-input" class="block text-[10px] font-bold uppercase tracking-wider text-[#3D6A58] leading-tight mb-0.5">
+                                            DESTINO (TOCA EL MAPA PARA MOVER)
+                                        </label>
+                                        <input type="text" id="dest-input" value="CERRO COLORADO (AV. AVIACIÓN)" autocomplete="off"
+                                            placeholder="Escribe destino o toca mapa..."
+                                            class="w-full bg-transparent text-sm sm:text-base font-bold text-sup-green uppercase focus:outline-none truncate">
+                                    </div>
+                                    <button type="button" id="pick-dest-map-btn" title="Elegir destino en el mapa"
+                                        class="btn-brutal-sm bg-sup-cream hover:bg-sup-orange hover:text-white text-sup-green px-2.5 py-1 rounded-lg text-xs font-bold uppercase shrink-0 flex items-center gap-1 shadow-sm">
+                                        <span>📍</span>
+                                        <span>Cambiar</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="flex items-center gap-2">
-                            <div
-                                class="flex-1 flex items-center gap-2 bg-white border-2 border-sup-green shadow-hard-sm rounded-lg px-3 py-2 min-w-0">
-                                <span class="w-3 h-3 rounded-sm bg-sup-green shrink-0"></span>
-                                <label for="dest-input"
-                                    class="text-[11px] font-bold uppercase text-sup-green/75 shrink-0">DESTINO:</label>
-                                <input type="text" id="dest-input" value="CERRO COLORADO (AV. AVIACIÓN)"
-                                    autocomplete="off" placeholder="Escribe distrito, avenida o toca el mapa..."
-                                    class="w-full bg-transparent text-xs sm:text-sm font-bold uppercase text-sup-green placeholder-sup-green/45 focus:outline-none truncate">
-                            </div>
-                            <button type="button" id="pick-dest-map-btn" title="Elegir destino en el mapa"
-                                class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white text-sup-green px-3 py-2.5 rounded-lg text-xs font-bold uppercase shrink-0 flex items-center gap-1.5">
-                                <i class="fa-solid fa-location-dot text-xs"></i>
-                                <span>MAPA</span>
-                            </button>
-                        </div>
+                        <!-- Botón oculto para compatibilidad con pickOriginBtn -->
+                        <button type="button" id="pick-origin-map-btn" class="hidden"></button>
                     </div>
 
                     <!-- Lista desplegable flotante de sugerencias (Nodos + OpenStreetMap Arequipa) -->
                     <div id="place-suggestions-box"
-                        class="hidden absolute left-3 right-3 top-[calc(100%-4px)] z-[1100] bg-white border-2 border-sup-green shadow-hard rounded-lg max-h-52 overflow-y-auto no-scrollbar divide-y divide-sup-green/15">
+                        class="hidden absolute left-3 right-3 top-[calc(100%-4px)] z-[1100] bg-white border-2 border-sup-green shadow-hard rounded-2xl max-h-52 overflow-y-auto no-scrollbar divide-y divide-sup-green/15">
                     </div>
                 </div>
 
-                <div class="relative flex-1 w-full min-h-[200px] retro-map-tiles overflow-hidden">
+                <!-- MAPA CENTRAL INTERACTIVO -->
+                <div class="relative flex-1 w-full min-h-[190px] retro-map-tiles overflow-hidden">
                     <div id="map-screen-1" class="w-full h-full"></div>
-                    <div
-                        class="absolute top-3 left-3 z-[1001] bg-sup-green text-sup-cream border-2 border-sup-orange shadow-hard-sm px-3 py-1.5 rounded-md flex items-center gap-2 text-xs font-bold uppercase">
+
+                    <!-- Badge Superior: Radio Privado 1000m -->
+                    <div class="absolute top-3 left-3 z-[1001] bg-sup-green text-sup-cream border border-sup-green shadow-hard-sm px-3.5 py-1.5 rounded-full flex items-center gap-2 text-xs font-bold uppercase">
                         <span class="w-2.5 h-2.5 rounded-full bg-sup-orange animate-ping"></span>
-                        <span>RADIO PRIVADO 1000M ACTIVO</span>
+                        <span>RADIO PRIVADO 1000M</span>
                     </div>
+
+                    <!-- Banner de Selección de Punto en el Mapa -->
                     <div id="map-pick-banner"
-                        class="hidden absolute top-12 left-3 right-3 z-[1001] bg-sup-orange text-white border-2 border-sup-green shadow-hard-sm px-3 py-2 rounded-md flex items-center justify-between gap-2 text-xs font-bold uppercase">
+                        class="hidden absolute top-12 left-3 right-3 z-[1001] bg-sup-orange text-white border-2 border-sup-green shadow-hard-sm px-3.5 py-2 rounded-xl flex items-center justify-between gap-2 text-xs font-bold uppercase">
                         <span id="map-pick-text">👆 TOCA EL MAPA PARA ELEGIR SALIDA</span>
                         <button type="button" id="cancel-map-pick-btn"
                             class="bg-sup-green text-sup-cream px-2 py-1 rounded text-xs font-bold">✕</button>
                     </div>
-                    <div id="route-stats-badge"
-                        class="hidden absolute bottom-3 left-3 z-[1001] bg-sup-cream text-sup-green border-2 border-sup-green shadow-hard-sm px-3 py-1.5 rounded-md text-xs font-bold uppercase">
-                        🛣️ CALCULANDO RUTA...
-                    </div>
+
+                    <!-- Botón Flotante Inferior Derecho: Recentrar Mapa -->
+                    <button type="button" id="recenter-map-btn" title="Recentrar mapa en la ruta"
+                        class="absolute bottom-3 right-3 z-[1001] bg-white border-2 border-sup-green shadow-hard-sm rounded-xl p-2.5 text-sup-green hover:bg-sup-orange hover:text-white transition-colors flex items-center justify-center">
+                        <i class="fa-solid fa-expand text-sm"></i>
+                    </button>
                 </div>
 
-                <div class="p-3.5 sm:p-4 bg-sup-cream border-t-2 border-sup-green space-y-3 shrink-0">
+                <!-- PANEL INFERIOR DE VIAJE Y FILTROS -->
+                <div class="p-3 sm:p-3.5 bg-sup-cream border-t-2 border-sup-green space-y-2.5 shrink-0">
+                    <!-- Fila Superior de Estado: Distancia/Tiempo + Resumen Opciones -->
+                    <div class="flex items-center justify-between gap-2">
+                        <!-- Píldora Izquierda: Estadísticas de Ruta -->
+                        <div id="route-stats-badge"
+                            class="bg-[#D8CEB5] border border-sup-green/35 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold text-sup-green flex items-center gap-1.5 shadow-sm">
+                            <span>🚕</span>
+                            <span id="route-stats-text">5.2 km • ~10 min</span>
+                        </div>
+
+                        <!-- Píldora Derecha: Resumen de Filtros Activos -->
+                        <div id="summary-options-pill"
+                            class="bg-white border-2 border-sup-green shadow-sm px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold text-sup-green flex items-center gap-1.5">
+                            <i class="fa-solid fa-gear text-sup-green/65 text-xs"></i>
+                            <span id="summary-options-text">Ahora • Yape/Plin</span>
+                            <i class="fa-solid fa-chevron-up text-[10px] text-sup-green/60"></i>
+                        </div>
+                    </div>
+
+                    <!-- Selectores de Hora y Pago en Cápsulas Blancas -->
                     <div class="grid grid-cols-2 gap-2.5">
+                        <!-- Selector: ¿Cuándo sales? -->
                         <div>
-                            <span
-                                class="inline-block bg-sup-orange text-white border border-sup-green px-2 py-0.5 rounded-[3px] text-[10px] sm:text-xs font-display uppercase tracking-wider mb-1.5 shadow-hard-sm">¿CUÁNDO
-                                SALES?</span>
-                            <div class="grid grid-cols-3 gap-1.5">
+                            <span class="block text-xs font-bold uppercase text-sup-green/80 mb-1 tracking-wide">
+                                ¿CUÁNDO SALES?
+                            </span>
+                            <div class="bg-white border-2 border-sup-green rounded-2xl p-1 flex items-center justify-between shadow-sm">
                                 <button type="button" data-time="AHORA"
-                                    class="time-btn btn-brutal-sm bg-sup-orange text-white text-xs sm:text-sm font-bold py-2.5 rounded-md uppercase">AHORA</button>
+                                    class="time-btn flex-1 bg-sup-orange text-white text-xs sm:text-sm font-bold py-2 rounded-xl uppercase text-center transition-all shadow-sm">
+                                    AHORA
+                                </button>
                                 <button type="button" data-time="10 MIN"
-                                    class="time-btn btn-brutal-sm bg-white text-sup-green hover:bg-sup-orange/15 text-xs sm:text-sm font-bold py-2.5 rounded-md uppercase">10M</button>
+                                    class="time-btn flex-1 text-sup-green hover:bg-sup-cream text-xs sm:text-sm font-bold py-2 rounded-xl uppercase text-center transition-all">
+                                    10M
+                                </button>
                                 <button type="button" data-time="20 MIN"
-                                    class="time-btn btn-brutal-sm bg-white text-sup-green hover:bg-sup-orange/15 text-xs sm:text-sm font-bold py-2.5 rounded-md uppercase">20M</button>
+                                    class="time-btn flex-1 text-sup-green hover:bg-sup-cream text-xs sm:text-sm font-bold py-2 rounded-xl uppercase text-center transition-all">
+                                    20M
+                                </button>
                             </div>
                         </div>
+
+                        <!-- Selector: Dividir con -->
                         <div>
-                            <span
-                                class="inline-block bg-sup-green text-sup-cream border border-sup-green px-2 py-0.5 rounded-[3px] text-[10px] sm:text-xs font-display uppercase tracking-wider mb-1.5 shadow-hard-sm">DIVIDIR
-                                CON:</span>
-                            <div class="grid grid-cols-2 gap-1.5">
+                            <span class="block text-xs font-bold uppercase text-sup-green/80 mb-1 tracking-wide">
+                                DIVIDIR CON:
+                            </span>
+                            <div class="bg-white border-2 border-sup-green rounded-2xl p-1 flex items-center justify-between shadow-sm">
                                 <button type="button" data-payment="YAPE / PLIN"
-                                    class="pay-btn btn-brutal-sm bg-sup-plum text-white text-xs sm:text-sm font-bold py-2.5 rounded-md uppercase">YAPE/PLIN</button>
+                                    class="pay-btn flex-1 bg-sup-plum text-white text-xs sm:text-sm font-bold py-2 rounded-xl uppercase text-center transition-all shadow-sm">
+                                    YAPE/PLIN
+                                </button>
                                 <button type="button" data-payment="EFECTIVO"
-                                    class="pay-btn btn-brutal-sm bg-white text-sup-green text-xs sm:text-sm font-bold py-2.5 rounded-md uppercase">EFECTIVO</button>
+                                    class="pay-btn flex-1 text-sup-green hover:bg-sup-cream text-xs sm:text-sm font-bold py-2 rounded-xl uppercase text-center transition-all">
+                                    EFECTIVO
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <label
-                        class="flex items-center justify-between bg-white border-2 border-sup-green rounded-lg px-3.5 py-2.5 cursor-pointer select-none shadow-hard-sm">
-                        <div class="flex items-center gap-2.5">
-                            <span class="text-base text-sup-orange font-bold">♀</span>
-                            <div>
-                                <span class="block text-xs sm:text-sm font-bold uppercase text-sup-green leading-tight">SOLO
-                                    MUJERES VERIFICADAS</span>
-                                <span id="women-only-subtitle" class="text-[10px] sm:text-xs font-medium text-sup-green/70">Filtra
-                                    coincidencias exclusivamente femeninas</span>
+                    <!-- Fila: Solo Mujeres Verificadas con Switch Toggle -->
+                    <label for="women-only-toggle"
+                        class="bg-white border-2 border-sup-green rounded-2xl p-2.5 sm:p-3 flex items-center justify-between shadow-hard-sm cursor-pointer select-none">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#FFEAE5] border border-sup-orange/40 flex items-center justify-center text-sup-orange font-bold text-base shrink-0">
+                                ♀
+                            </div>
+                            <div class="min-w-0">
+                                <span class="block text-xs sm:text-sm font-bold text-sup-green leading-tight truncate">
+                                    Solo mujeres verificadas
+                                </span>
+                                <span id="women-only-subtitle" class="block text-[11px] font-medium text-sup-green/70 leading-tight truncate">
+                                    Cuenta femenina verificada (♀) activa
+                                </span>
                             </div>
                         </div>
-                        <input type="checkbox" id="women-only-toggle"
-                            class="w-5 h-5 accent-[#FA4A19] border-2 border-sup-green rounded-[3px] cursor-pointer">
+
+                        <!-- Modern iOS/Android style Switch Toggle -->
+                        <div class="toggle-switch-wrapper relative inline-flex items-center cursor-pointer shrink-0 ml-2">
+                            <input type="checkbox" id="women-only-toggle" class="sr-only">
+                            <div class="toggle-switch-track"></div>
+                        </div>
                     </label>
 
+                    <!-- Botón Principal de Búsqueda -->
                     <button type="button" id="start-radar-btn"
-                        class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-base sm:text-lg uppercase tracking-wider py-3.5 sm:py-4 rounded-lg flex items-center justify-center gap-2.5 shadow-hard">
+                        class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-base sm:text-lg uppercase tracking-wider py-3.5 sm:py-4 rounded-2xl flex items-center justify-center gap-2.5 shadow-hard">
                         <i class="fa-solid fa-satellite-dish text-lg"></i>
                         <span>BUSCAR COMPAÑEROS EN RUTA</span>
                     </button>
@@ -1186,7 +1255,7 @@
         </div>
     </div>
 
-    <script type="module" src="./src/main.js?v=24"></script>
+    <script type="module" src="./src/main.js?v=25"></script>
 </body>
 
 </html>

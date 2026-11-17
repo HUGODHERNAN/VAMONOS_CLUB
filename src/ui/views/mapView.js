@@ -163,9 +163,11 @@ export function setupMapView({ getState, setState, showToast, onStartSearch }) {
             gpsCoords: state.customGpsCoords
         });
 
+        const routeStatsText = document.getElementById('route-stats-text');
         if (routeStatsBadge) {
             routeStatsBadge.classList.remove('hidden');
-            routeStatsBadge.textContent = '🛣️ TRAZANDO POR CALLES...';
+            if (routeStatsText) routeStatsText.textContent = 'Calculando...';
+            else routeStatsBadge.textContent = '🛣️ TRAZANDO POR CALLES...';
         }
 
         const route = await fetchStreetRoute(activeOrigin, destData.coords);
@@ -187,9 +189,12 @@ export function setupMapView({ getState, setState, showToast, onStartSearch }) {
 
         if (routeStatsBadge) {
             if (route.isStreetRoute && route.distanceMeters !== null) {
-                routeStatsBadge.textContent = `🛣️ ${formatDistanceLabel(route.distanceMeters)} • ~${route.durationMinutes} MIN`;
+                const label = `${formatDistanceLabel(route.distanceMeters)} • ~${route.durationMinutes} min`;
+                if (routeStatsText) routeStatsText.textContent = label;
+                else routeStatsBadge.textContent = `🚕 ${label}`;
             } else {
-                routeStatsBadge.textContent = '📍 RUTA DIRECTA (SIN CONEXIÓN VIAL)';
+                if (routeStatsText) routeStatsText.textContent = 'Ruta directa';
+                else routeStatsBadge.textContent = '📍 RUTA DIRECTA';
             }
         }
     }
@@ -297,14 +302,73 @@ export function setupMapView({ getState, setState, showToast, onStartSearch }) {
         );
     });
 
+    const swapBtn = document.getElementById('swap-route-btn');
+    swapBtn?.addEventListener('click', () => {
+        const state = getState();
+        const originData = state.originPlace || PLACES_AQP.origins[state.originKey] || PLACES_AQP.origins.utp;
+        const destData = state.destPlace || PLACES_AQP.destinations[state.destKey] || PLACES_AQP.destinations.cerro_colorado;
+
+        if (originInput && destInput) {
+            originInput.value = destData.name;
+            destInput.value = originData.name;
+        }
+
+        setState({
+            originKey: state.destKey || 'custom',
+            originPlace: destData,
+            destKey: state.originKey || 'custom',
+            destPlace: originData,
+            customGpsCoords: null
+        });
+        syncRouteOnMap();
+        showToast('🔄 RUTA INVERTIDA');
+    });
+
+    const recenterBtn = document.getElementById('recenter-map-btn');
+    recenterBtn?.addEventListener('click', () => {
+        syncRouteOnMap();
+    });
+
+    function updateOptionsSummary(state) {
+        const summaryText = document.getElementById('summary-options-text');
+        if (summaryText) {
+            const time = state.departureTime || 'Ahora';
+            const rawPay = state.paymentMethod || 'Yape/Plin';
+            const pay = rawPay.includes('YAPE') ? 'Yape/Plin' : 'Efectivo';
+            summaryText.textContent = `${time} • ${pay}`;
+        }
+    }
+
+    function updateTimeButtonStyles(selectedTime) {
+        timeBtns.forEach((btn) => {
+            const t = btn.getAttribute('data-time') || 'AHORA';
+            const active = t === selectedTime;
+            btn.className = active
+                ? 'time-btn flex-1 bg-sup-orange text-white text-xs sm:text-sm font-bold py-2 rounded-xl uppercase text-center transition-all shadow-sm'
+                : 'time-btn flex-1 text-sup-green hover:bg-sup-cream text-xs sm:text-sm font-bold py-2 rounded-xl uppercase text-center transition-all';
+        });
+    }
+
+    function updatePayButtonStyles(selectedPay) {
+        payBtns.forEach((btn) => {
+            const p = btn.getAttribute('data-payment') || 'YAPE / PLIN';
+            const active = p === selectedPay;
+            if (active) {
+                btn.className = p.includes('YAPE')
+                    ? 'pay-btn flex-1 bg-sup-plum text-white text-xs sm:text-sm font-bold py-2 rounded-xl uppercase text-center transition-all shadow-sm'
+                    : 'pay-btn flex-1 bg-sup-green text-sup-cream text-xs sm:text-sm font-bold py-2 rounded-xl uppercase text-center transition-all shadow-sm';
+            } else {
+                btn.className = 'pay-btn flex-1 text-sup-green hover:bg-sup-cream text-xs sm:text-sm font-bold py-2 rounded-xl uppercase text-center transition-all';
+            }
+        });
+    }
+
     timeBtns.forEach((btn) => {
         btn.addEventListener('click', () => {
             const label = btn.getAttribute('data-time') || 'AHORA';
             setState({ departureTime: label });
-            timeBtns.forEach((b) => {
-                b.className = 'time-btn btn-brutal-sm bg-white text-sup-green hover:bg-sup-orange/15 text-[10px] font-bold py-1.5 rounded-sm uppercase';
-            });
-            btn.className = 'time-btn btn-brutal-sm bg-sup-orange text-white text-[10px] font-bold py-1.5 rounded-sm uppercase';
+            updateTimeButtonStyles(label);
+            updateOptionsSummary(getState());
         });
     });
 
@@ -312,12 +376,8 @@ export function setupMapView({ getState, setState, showToast, onStartSearch }) {
         btn.addEventListener('click', () => {
             const method = btn.getAttribute('data-payment') || 'YAPE / PLIN';
             setState({ paymentMethod: method });
-            payBtns.forEach((b) => {
-                b.className = 'pay-btn btn-brutal-sm bg-white text-sup-green text-[10px] font-bold py-1.5 rounded-sm uppercase';
-            });
-            btn.className = method.includes('YAPE')
-                ? 'pay-btn btn-brutal-sm bg-sup-plum text-white text-[10px] font-bold py-1.5 rounded-sm uppercase'
-                : 'pay-btn btn-brutal-sm bg-sup-green text-sup-cream text-[10px] font-bold py-1.5 rounded-sm uppercase';
+            updatePayButtonStyles(method);
+            updateOptionsSummary(getState());
         });
     });
 
@@ -351,6 +411,10 @@ export function setupMapView({ getState, setState, showToast, onStartSearch }) {
                     onDestDragEnd: (coords) => applyMapCoordinate('dest', coords)
                 });
                 syncRouteOnMap();
+                const st = getState();
+                updateTimeButtonStyles(st.departureTime || 'AHORA');
+                updatePayButtonStyles(st.paymentMethod || 'YAPE / PLIN');
+                updateOptionsSummary(st);
             }
         },
         syncWomenToggleAccess,
