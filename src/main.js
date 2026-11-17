@@ -881,6 +881,7 @@ async function bootstrap() {
     // Limpiar hash de OAuth (access_token / refresh_token) para que el navegador móvil quede en URL limpia
     if (window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('refresh_token'))) {
         window.history.replaceState({}, document.title, window.location.pathname);
+        enforceMobileViewport();
     }
 
     if (isCloudMode) {
@@ -904,11 +905,32 @@ async function bootstrap() {
             }
         });
     }
+
+    window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            enforceMobileViewport();
+        }
+    });
+    window.addEventListener('focus', enforceMobileViewport);
+    window.addEventListener('pageshow', enforceMobileViewport);
+
     window.addEventListener('resize', () => {
         if (appStore.getState().currentScreen === 1) {
             mapService.invalidateSize();
         }
     });
+}
+
+function enforceMobileViewport() {
+    if (typeof window === 'undefined') return;
+    const metaViewport = document.querySelector('meta[name="viewport"]');
+    if (metaViewport) {
+        metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover');
+    }
+    window.scrollTo(0, 0);
+    if (typeof appStore !== 'undefined' && appStore.getState().currentScreen === 1) {
+        setTimeout(() => mapService.invalidateSize(), 150);
+    }
 }
 
 window.addEventListener('DOMContentLoaded', bootstrap);

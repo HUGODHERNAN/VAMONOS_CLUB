@@ -12,8 +12,18 @@ export function setupPwaInstall({ showToast }) {
         window.location.hostname === '127.0.0.1';
 
     if ('serviceWorker' in navigator && isSecureOrigin) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {
+        navigator.serviceWorker.register('./sw.js').then((registration) => {
+            registration.update().catch(() => {});
+        }).catch(() => {
             // Service worker registration failed silently in unsupported contexts
+        });
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+            }
         });
     }
 

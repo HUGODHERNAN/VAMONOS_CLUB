@@ -6,13 +6,16 @@
 
 body {
     font-family: 'Space Grotesk', sans-serif;
-    background-color: #063120;
-    background-image: radial-gradient(#0E4A32 1.25px, transparent 1.25px);
-    background-size: 22px 22px;
+    background-color: var(--sup-cream);
     color: var(--sup-green);
     margin: 0;
     padding: 0;
     overflow-x: hidden;
+    width: 100%;
+    min-height: 100dvh;
+    touch-action: pan-x pan-y;
+    overscroll-behavior-y: none;
+    -webkit-text-size-adjust: 100%;
 }
 
 /* Patrón de Ajedrez (Checkerboard) estilo SUPClub */
@@ -145,9 +148,16 @@ body {
     flex-direction: column;
 }
 
-/* En tablets y computadoras (>= 640px): Enmarcado retro neo-brutalista centrado */
-@media (min-width: 640px) {
+/* En computadoras de escritorio (pantallas anchas >= 768px con mouse/puntero fino) */
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+    body {
+        background-color: #063120;
+        background-image: radial-gradient(#0E4A32 1.25px, transparent 1.25px);
+        background-size: 22px 22px;
+    }
+
     .workspace-wrapper {
+        background-color: transparent;
         height: auto;
         min-height: 100dvh;
         max-height: none;
