@@ -856,6 +856,16 @@ async function bootstrap() {
         }
     }
 
+    // Verificar si hay errores devueltos por el proveedor OAuth en la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const authErrorDesc = urlParams.get('error_description') || hashParams.get('error_description') || urlParams.get('error');
+    if (authErrorDesc) {
+        const cleanMsg = decodeURIComponent(authErrorDesc).replace(/\+/g, ' ');
+        showToast(`⚠️ ERROR EN GOOGLE: ${cleanMsg.toUpperCase()}`);
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     // Hydrate saved user session (Supabase Cloud or Local Demo)
     const restored = await authService.restoreSession();
     if (restored.profile) {
