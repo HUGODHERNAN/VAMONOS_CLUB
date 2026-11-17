@@ -262,17 +262,17 @@ export function setupMapView({ getState, setState, showToast, onStartSearch }) {
 
     cancelMapPickBtn?.addEventListener('click', () => setPickTarget(null));
 
-    function requestGpsLocation({ silent = false } = {}) {
+    gpsBtn?.addEventListener('click', () => {
         if (!navigator.geolocation) {
-            if (!silent) showToast('TU NAVEGADOR NO SOPORTA GEOLOCALIZACIÓN');
+            showToast('TU NAVEGADOR NO SOPORTA GEOLOCALIZACIÓN');
             return;
         }
-        if (gpsBtn) gpsBtn.disabled = true;
-        if (!silent) showToast('📡 OBTENIENDO TU UBICACIÓN EN AREQUIPA...');
+        gpsBtn.disabled = true;
+        showToast('📡 OBTENIENDO TU UBICACIÓN EN AREQUIPA...');
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
-                if (gpsBtn) gpsBtn.disabled = false;
+                gpsBtn.disabled = false;
                 const coords = [position.coords.latitude, position.coords.longitude];
                 const nearest = findNearestOriginKey(coords, PLACES_AQP.origins);
                 const resolvedName = await reverseGeocodeAqp(coords);
@@ -288,26 +288,18 @@ export function setupMapView({ getState, setState, showToast, onStartSearch }) {
                 });
                 syncRouteOnMap();
 
-                if (!silent) {
-                    if (nearest) {
-                        showToast(`📍 GPS ACTIVO • CERCA A ${nearest.name.split(' (')[0]} (${formatDistanceLabel(nearest.distanceMeters)})`);
-                    } else {
-                        showToast(`📍 UBICACIÓN DETECTADA: ${resolvedName}`);
-                    }
+                if (nearest) {
+                    showToast(`📍 GPS ACTIVO • CERCA A ${nearest.name.split(' (')[0]} (${formatDistanceLabel(nearest.distanceMeters)})`);
+                } else {
+                    showToast('📍 RADIO PRIVADO 250M CENTRADO EN TU GPS');
                 }
             },
             () => {
-                if (gpsBtn) gpsBtn.disabled = false;
-                if (!silent) {
-                    showToast('PERMISO GPS DENEGADO • ESCRIBE O TOCA EL MAPA');
-                }
+                gpsBtn.disabled = false;
+                showToast('PERMISO GPS DENEGADO • ESCRIBE O TOCA EL MAPA');
             },
-            { enableHighAccuracy: true, timeout: 8000 }
+            { enableHighAccuracy: true, timeout: 7000 }
         );
-    }
-
-    gpsBtn?.addEventListener('click', () => {
-        requestGpsLocation({ silent: false });
     });
 
     const swapBtn = document.getElementById('swap-route-btn');
@@ -423,23 +415,6 @@ export function setupMapView({ getState, setState, showToast, onStartSearch }) {
                 updateTimeButtonStyles(st.departureTime || 'AHORA');
                 updatePayButtonStyles(st.paymentMethod || 'YAPE / PLIN');
                 updateOptionsSummary(st);
-
-                // Solicitar permiso de ubicación automáticamente la primera vez que se accede al mapa
-                try {
-                    const hasAskedGps = localStorage.getItem('vamonos_gps_auto_requested');
-                    if (!hasAskedGps) {
-                        localStorage.setItem('vamonos_gps_auto_requested', 'true');
-                        setTimeout(() => {
-                            requestGpsLocation({ silent: false });
-                        }, 500);
-                    } else if (navigator.permissions && navigator.permissions.query) {
-                        navigator.permissions.query({ name: 'geolocation' }).then((status) => {
-                            if (status.state === 'granted') {
-                                requestGpsLocation({ silent: true });
-                            }
-                        }).catch(() => {});
-                    }
-                } catch (_) {}
             }
         },
         syncWomenToggleAccess,

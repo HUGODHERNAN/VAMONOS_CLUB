@@ -256,6 +256,14 @@ body {
     transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
+/* Acordeón de Preguntas Frecuentes (FAQ) */
+details summary::-webkit-details-marker {
+    display: none;
+}
+details summary {
+    list-style: none;
+}
+
 /* Filtro cálido retro para armonizar OpenStreetMap con el fondo crema #E7DEC8 */
 /* isolation: isolate encierra los z-index internos de Leaflet (400-1000) para que no tapen modales */
 .retro-map-tiles {

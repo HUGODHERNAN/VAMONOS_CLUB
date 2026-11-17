@@ -876,7 +876,7 @@ async function bootstrap() {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    const hasOAuthHash = typeof window !== 'undefined' && window.location.hash && 
+    const hasOAuthHash = typeof window !== 'undefined' && window.location.hash &&
         (window.location.hash.includes('access_token') || window.location.hash.includes('refresh_token'));
 
     // Hydrate saved user session (Supabase Cloud or Local Demo)

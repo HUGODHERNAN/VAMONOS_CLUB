@@ -68,10 +68,10 @@ export const matchService = {
     },
 
     async subscribeToMatchEvents({ userId, onIncomingRequest, onRequestClosed, onTripOpened, onRideIntentsChange }) {
-        if (!isSupabaseConfigured() || !userId) return () => {};
+        if (!isSupabaseConfigured() || !userId) return () => { };
 
         const supabase = await getSupabaseClient();
-        if (!supabase) return () => {};
+        if (!supabase) return () => { };
 
         const channel = supabase.channel(`match-events-${userId}`);
 
