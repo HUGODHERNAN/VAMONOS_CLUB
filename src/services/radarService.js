@@ -119,7 +119,55 @@ export const radarService = {
             return matchesRes;
         }
 
+        // Emitir evento en tiempo real vía WebSockets a otros radares activos
+        this.broadcastNewIntent(inserted.id);
+
         return { ok: true, mode: 'cloud', intentId: inserted.id, candidates: matchesRes.candidates };
+    },
+
+    async broadcastNewIntent(intentId) {
+        if (!isSupabaseConfigured()) return;
+        const supabase = await getSupabaseClient();
+        if (!supabase) return;
+
+        try {
+            const channel = supabase.channel('radar-live-broadcast');
+            await channel.send({
+                type: 'broadcast',
+                event: 'new_intent_published',
+                payload: { intentId, timestamp: Date.now() }
+            });
+        } catch {
+            // Silencioso ante fallos de red esporádicos
+        }
+    },
+
+    async subscribeToLiveRadar(onUpdate) {
+        if (!isSupabaseConfigured()) return () => {};
+        const supabase = await getSupabaseClient();
+        if (!supabase) return () => {};
+
+        const channel = supabase.channel('radar-live-broadcast');
+
+        // 1. Escuchar transmisiones broadcast instantáneas (WebSocket)
+        channel.on('broadcast', { event: 'new_intent_published' }, () => {
+            onUpdate?.();
+        });
+
+        // 2. Escuchar cambios directos de la tabla ride_intents
+        channel.on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'ride_intents' },
+            () => {
+                onUpdate?.();
+            }
+        );
+
+        channel.subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     },
 
     async refreshMatches({ intentId, dismissedUserIds = [] }) {
