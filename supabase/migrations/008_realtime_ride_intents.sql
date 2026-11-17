@@ -1,5 +1,5 @@
 -- =============================================================================
--- VÁMONOS CLUB AREQUIPA - HABILITAR TIEMPO REAL PARA RIDE_INTENTS
+-- VÁMONOS CLUB AREQUIPA - HABILITAR REALTIME EN RIDE_INTENTS PARA DETECCIÓN INMEDIATA
 -- Ejecutar en Supabase SQL Editor
 -- =============================================================================
 

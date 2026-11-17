@@ -22,7 +22,7 @@ export const TIMERS = Object.freeze({
     CHAT_TTL_SECONDS: 900, // 15 minutos
     NOSHOW_LOCK_REMAINING_THRESHOLD: 600, // Se habilita cuando quedan <= 600s (tras 5 min)
     PRIVACY_RADIUS_METERS: 1000,
-    RADAR_AUTO_REFRESH_MS: 2500,
+    RADAR_AUTO_REFRESH_MS: 3500,
     TOAST_DURATION_MS: 3400
 });
 

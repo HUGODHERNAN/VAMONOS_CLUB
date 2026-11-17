@@ -30,7 +30,6 @@ let requestAutoAcceptTimeout = null;
 let incomingCountdownInterval = null;
 let chatTimerInterval = null;
 let radarRefreshInterval = null;
-let unsubscribeRadarLive = null;
 let typingTimeout = null;
 let unsubscribeMatchEvents = null;
 let unsubscribeTripRoom = null;
@@ -39,10 +38,6 @@ function clearRadarRefreshTimer() {
     if (radarRefreshInterval) {
         clearInterval(radarRefreshInterval);
         radarRefreshInterval = null;
-    }
-    if (unsubscribeRadarLive) {
-        unsubscribeRadarLive();
-        unsubscribeRadarLive = null;
     }
 }
 
@@ -279,50 +274,33 @@ async function bootstrap() {
         startRadarAutoRefresh();
     }
 
-    async function triggerSilentRadarRefresh() {
+    async function checkAndRefreshRadar() {
         const st = appStore.getState();
         if (st.currentScreen !== 2 || !st.activeIntentId || st.pendingPartner || st.incomingRequest) {
             return;
         }
-
         const refreshed = await radarService.refreshMatches({
             intentId: st.activeIntentId,
             dismissedUserIds: st.dismissedUserIds
         });
         if (!refreshed.ok) return;
 
-        const currentCandidates = st.candidates || [];
-        const nextCandidates = refreshed.candidates || [];
-
-        const prevSig = currentCandidates.map((c) => `${c.id}:${c.intentId}:${c.matchType}`).join('|');
-        const nextSig = nextCandidates.map((c) => `${c.id}:${c.intentId}:${c.matchType}`).join('|');
-
+        const prevSig = (st.candidates || []).map((c) => `${c.id}:${c.intentId}:${c.matchType}`).join('|');
+        const nextSig = refreshed.candidates.map((c) => `${c.id}:${c.intentId}:${c.matchType}`).join('|');
         if (prevSig !== nextSig) {
-            const hadNone = currentCandidates.length === 0;
-            appStore.setState({ candidates: nextCandidates });
+            const hadNone = (st.candidates || []).length === 0;
+            appStore.setState({ candidates: refreshed.candidates });
             radarView.render();
-            if (hadNone && nextCandidates.length > 0) {
-                showToast('🚕 ¡NUEVO COMPAÑERO ENCONTRADO EN TU RUTA!');
+            if (hadNone && refreshed.candidates.length > 0) {
+                showToast('🚕 ¡NUEVO COMPAÑERO DETECTADO EN TU RUTA!');
             }
         }
     }
 
-    async function startRadarAutoRefresh() {
+    function startRadarAutoRefresh() {
         clearRadarRefreshTimer();
         if (!isCloudMode) return;
-
-        // 1. Suscripción instantánea en tiempo real vía WebSockets
-        unsubscribeRadarLive = await radarService.subscribeToLiveRadar(() => {
-            triggerSilentRadarRefresh();
-        });
-
-        // 2. Intervalo de sondeo activo de alta frecuencia (cada 2.5s)
-        radarRefreshInterval = setInterval(() => {
-            triggerSilentRadarRefresh();
-        }, TIMERS.RADAR_AUTO_REFRESH_MS);
-
-        // Verificación inicial inmediata
-        setTimeout(() => triggerSilentRadarRefresh(), 500);
+        radarRefreshInterval = setInterval(checkAndRefreshRadar, TIMERS.RADAR_AUTO_REFRESH_MS);
     }
 
     const mapView = setupMapView({
@@ -400,6 +378,9 @@ async function bootstrap() {
                 incomingRequestModal.close();
                 appStore.setState({ pendingPartner: null, activeRequestId: null, incomingRequest: null });
                 openCoordinationChat({ partner, tripId, originName, destName });
+            },
+            onRideIntentsChange() {
+                checkAndRefreshRadar();
             }
         });
     }
@@ -781,7 +762,6 @@ async function bootstrap() {
     const radarView = setupRadarView({
         getState: () => appStore.getState(),
         onBackToMap() {
-            clearRadarRefreshTimer();
             routePreviewModal.close();
             showScreen(1);
         },
@@ -916,19 +896,6 @@ async function bootstrap() {
             if (st.currentScreen === 0 && st.pendingConfirmEmail) {
                 const next = await authService.restoreSession();
                 handleCloudProfileArrival(next.profile);
-            } else if (st.currentScreen === 2 && st.activeIntentId && isCloudMode) {
-                const refreshed = await radarService.refreshMatches({
-                    intentId: st.activeIntentId,
-                    dismissedUserIds: st.dismissedUserIds
-                });
-                if (refreshed.ok) {
-                    const hadNone = (st.candidates || []).length === 0;
-                    appStore.setState({ candidates: refreshed.candidates });
-                    radarView.render();
-                    if (hadNone && refreshed.candidates.length > 0) {
-                        showToast('🚕 ¡NUEVO COMPAÑERO DETECTADO EN TU RUTA!');
-                    }
-                }
             }
         });
     }

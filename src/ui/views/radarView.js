@@ -36,8 +36,8 @@ export function setupRadarView({ getState, onBackToMap, onToggleWomenFilter, onD
             return;
         }
 
-        const backMapBtn = event.target.closest('[data-action="back-map"]');
-        if (backMapBtn) {
+        const changeRouteBtn = event.target.closest('[data-action="change-route"]');
+        if (changeRouteBtn) {
             onBackToMap();
             return;
         }
@@ -82,57 +82,59 @@ export function setupRadarView({ getState, onBackToMap, onToggleWomenFilter, onD
 
         if (candidates.length === 0) {
             container.innerHTML = `
-                <div class="bg-white border-2 border-sup-green shadow-hard rounded-xl p-5 sm:p-6 text-center space-y-4 my-2 sm:my-3 animate-pop overflow-hidden relative">
-                    <!-- CONTENEDOR VISUAL DEL RADAR Y ONDAS DE SONAR -->
-                    <div class="relative w-36 h-36 mx-auto flex items-center justify-center my-1 select-none">
-                        <!-- Ondas concéntricas animadas -->
-                        <div class="radar-sonar-ring radar-sonar-ring-1 border-sup-orange/70"></div>
-                        <div class="radar-sonar-ring radar-sonar-ring-2 border-sup-green/60"></div>
-                        <div class="radar-sonar-ring radar-sonar-ring-3 border-sup-orange/50"></div>
+                <div class="bg-white border-2 border-sup-green shadow-hard rounded-xl p-5 sm:p-6 text-center space-y-4 my-2 animate-pop">
+                    <!-- Círculo de Radar con Ondas de Sonar -->
+                    <div class="relative w-36 h-36 sm:w-40 sm:h-40 mx-auto rounded-full border-[3px] border-sup-green bg-[#E7DEC8] overflow-hidden flex items-center justify-center shadow-hard-sm">
+                        <!-- Crosshairs del radar -->
+                        <div class="absolute inset-x-0 top-1/2 h-[1px] bg-sup-green/30"></div>
+                        <div class="absolute inset-y-0 left-1/2 w-[1px] bg-sup-green/30"></div>
+                        <!-- Círculos concéntricos de rango -->
+                        <div class="absolute w-24 h-24 rounded-full border border-sup-green/25 pointer-events-none"></div>
+                        <div class="absolute w-12 h-12 rounded-full border border-sup-green/25 pointer-events-none"></div>
 
-                        <!-- Círculo base del radar con cuadrícula y barrido -->
-                        <div class="relative w-28 h-28 rounded-full border-2 border-sup-green bg-sup-cream/50 overflow-hidden flex items-center justify-center shadow-inner">
-                            <!-- Haz de barrido giratorio 360° -->
-                            <div class="radar-sweep-beam"></div>
+                        <!-- Ondas y barrido animado -->
+                        <div class="radar-wave-ring"></div>
+                        <div class="radar-wave-ring-delayed"></div>
+                        <div class="radar-sweep-cone"></div>
 
-                            <!-- Líneas de retícula de mira -->
-                            <div class="absolute inset-x-0 top-1/2 border-t border-sup-green/20"></div>
-                            <div class="absolute inset-y-0 left-1/2 border-l border-sup-green/20"></div>
-                            <div class="w-16 h-16 rounded-full border border-sup-green/30 absolute"></div>
-
-                            <!-- Baliza central con antena -->
-                            <div class="relative z-10 w-9 h-9 rounded-full bg-sup-orange border-2 border-sup-green text-white flex items-center justify-center text-sm shadow-sm animate-pulse">
-                                📡
-                            </div>
+                        <!-- Centro del radar (Antena con pulso) -->
+                        <div class="relative z-10 w-9 h-9 rounded-full bg-sup-green border-2 border-white flex items-center justify-center text-white text-sm shadow-sm radar-center-ping">
+                            📡
                         </div>
                     </div>
 
-                    <!-- TEXTOS DE ESTADO EN VIVO -->
-                    <div class="space-y-1.5 max-w-sm mx-auto">
-                        <div class="inline-flex items-center gap-1.5 bg-[#1E7A50]/15 border border-[#1E7A50] px-2.5 py-0.5 rounded-full mb-1">
-                            <span class="w-2 h-2 rounded-full bg-[#1E7A50] animate-ping"></span>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-[#1E7A50]">
-                                ESCANEO ACTIVO EN VIVO
-                            </span>
+                    <!-- Indicador y mensajes de estado -->
+                    <div class="space-y-1.5">
+                        <div class="inline-flex items-center gap-1.5 bg-[#1E7A50] text-white border-2 border-sup-green shadow-hard-sm px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                            <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                            <span>Escaneando en vivo • Radio 1000m</span>
                         </div>
-                        <h3 class="font-display text-sm sm:text-base uppercase text-sup-green tracking-tight">
-                            Buscando compañeros en tu ruta...
+                        <h3 class="font-display text-sm sm:text-base uppercase text-sup-green tracking-tight pt-1">
+                            BUSCANDO COMPAÑEROS EN TU RUTA...
                         </h3>
-                        <p class="text-[11px] sm:text-xs font-medium text-sup-green/80 leading-relaxed">
-                            Rastreo continuo en un radio de <strong>1000m</strong>. En cuanto otro estudiante o vecino active su viaje, aparecerá aquí automáticamente.
+                        <p class="text-[11px] sm:text-xs font-medium text-sup-green/80 max-w-xs mx-auto leading-snug">
+                            Rastreando universitarios y vecinos hacia <strong>${escapeHtml(destShort)}</strong>. Aparecerán aquí automáticamente.
                         </p>
                     </div>
 
-                    <!-- PIE DE ACCIONES SECUNDARIAS -->
-                    <div class="flex items-center justify-center gap-2 pt-2 border-t border-sup-green/15 text-[11px] font-bold">
-                        <button type="button" data-action="back-map" class="text-sup-green/75 hover:text-sup-orange uppercase transition-colors px-2 py-1">
-                            ← Cambiar ruta
-                        </button>
-                        <span class="text-sup-green/30">•</span>
-                        <button type="button" data-action="reset-radar" class="text-sup-orange hover:underline uppercase transition-colors px-2 py-1 flex items-center gap-1">
-                            <span>↻</span>
-                            <span>Buscar ahora mismo</span>
-                        </button>
+                    <!-- Barra de estado y cambio de ruta -->
+                    <div class="pt-2 border-t border-sup-green/15 flex flex-col items-center gap-2">
+                        <span class="flex items-center gap-1.5 text-[10px] font-bold text-sup-green/65 uppercase tracking-wide">
+                            <span class="w-1.5 h-1.5 rounded-full bg-sup-orange animate-pulse"></span>
+                            <span>Recarga automática continua</span>
+                        </span>
+                        <div class="flex items-center gap-2 mt-1">
+                            <button type="button" data-action="change-route"
+                                class="btn-brutal-sm bg-sup-cream hover:bg-sup-creamDark text-sup-green border-2 border-sup-green text-[10px] font-bold uppercase px-3.5 py-1.5 rounded-lg transition-colors">
+                                ← Cambiar origen / destino
+                            </button>
+                            ${state.dismissedUserIds.length > 0 ? `
+                                <button type="button" data-action="reset-radar"
+                                    class="btn-brutal-sm bg-white hover:bg-sup-cream text-sup-orange border-2 border-sup-green text-[10px] font-bold uppercase px-3.5 py-1.5 rounded-lg transition-colors">
+                                    Ver omitidos (${state.dismissedUserIds.length})
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
             `;

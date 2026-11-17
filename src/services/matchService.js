@@ -67,7 +67,7 @@ export const matchService = {
             .eq('status', 'pending');
     },
 
-    async subscribeToMatchEvents({ userId, onIncomingRequest, onRequestClosed, onTripOpened }) {
+    async subscribeToMatchEvents({ userId, onIncomingRequest, onRequestClosed, onTripOpened, onRideIntentsChange }) {
         if (!isSupabaseConfigured() || !userId) return () => {};
 
         const supabase = await getSupabaseClient();
@@ -148,6 +148,14 @@ export const matchService = {
             'postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'trips', filter: `user_b_id=eq.${userId}` },
             handleTripInsert
+        );
+
+        channel.on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'ride_intents' },
+            () => {
+                onRideIntentsChange?.();
+            }
         );
 
         channel.subscribe();
