@@ -68,20 +68,45 @@ export function setupRoutePreviewModal({ onRequestRide }) {
 
     return {
         close,
-        async open({ partner, originCoords, destCoords, myRouteCoords }) {
+        async open({ partner, originCoords, destCoords, myRouteCoords, mode = 'radar' }) {
             if (!partner || !Array.isArray(originCoords) || !Array.isArray(destCoords)) return;
             activePartnerId = partner.id;
             const seq = ++renderSeq;
 
-            const isSame = partner.matchType === 'same';
-            if (titleEl) {
-                titleEl.textContent = `${partner.name.toUpperCase()} • ${isSame ? '🟢 MISMO DESTINO' : '🔵 EN TU RUTA (DE PASO)'}`;
-            }
-            if (subtitleEl) {
-                subtitleEl.textContent = `SALIDA A ~${partner.distanceMeters}M • ${isSame ? 'DESTINO' : 'BAJA EN'}: ${partner.stopDistrict} (${partner.stopStreet})`;
-            }
-            if (partnerLegendEl) {
-                partnerLegendEl.textContent = `Parada de ${partner.name.split(' ')[0]}`;
+            if (mode === 'incoming') {
+                if (titleEl) titleEl.textContent = `SOLICITUD • ${partner.name.toUpperCase()}`;
+                if (subtitleEl) subtitleEl.textContent = `RUTA PROPUESTA: ${partner.stopStreet || 'SALIDA'} → ${partner.stopDistrict || 'DESTINO'}`;
+                if (partnerLegendEl) partnerLegendEl.textContent = `Ruta de ${partner.name.split(' ')[0]}`;
+                requestBtn?.classList.add('hidden');
+                if (closeFooterBtn) {
+                    closeFooterBtn.className = 'btn-brutal col-span-2 bg-sup-green hover:bg-sup-orange hover:text-white text-sup-cream font-display text-xs uppercase py-2.5 rounded-md text-center transition-colors cursor-pointer shadow-sm';
+                    closeFooterBtn.textContent = '← VOLVER A LA SOLICITUD';
+                }
+            } else if (mode === 'chat') {
+                if (titleEl) titleEl.textContent = `MAPA DEL VIAJE • ${partner.name.toUpperCase()}`;
+                if (subtitleEl) subtitleEl.textContent = `TRAYECTO COMPARTIDO: ${partner.stopStreet || 'SALIDA'} → ${partner.stopDistrict || 'DESTINO'}`;
+                if (partnerLegendEl) partnerLegendEl.textContent = `Destino de ${partner.name.split(' ')[0]}`;
+                requestBtn?.classList.add('hidden');
+                if (closeFooterBtn) {
+                    closeFooterBtn.className = 'btn-brutal col-span-2 bg-sup-green hover:bg-sup-orange hover:text-white text-sup-cream font-display text-xs uppercase py-2.5 rounded-md text-center transition-colors cursor-pointer shadow-sm';
+                    closeFooterBtn.textContent = '← VOLVER AL CHAT';
+                }
+            } else {
+                const isSame = partner.matchType === 'same';
+                if (titleEl) {
+                    titleEl.textContent = `${partner.name.toUpperCase()} • ${isSame ? '🟢 MISMO DESTINO' : '🔵 EN TU RUTA (DE PASO)'}`;
+                }
+                if (subtitleEl) {
+                    subtitleEl.textContent = `SALIDA A ~${partner.distanceMeters || 50}M • ${isSame ? 'DESTINO' : 'BAJA EN'}: ${partner.stopDistrict} (${partner.stopStreet})`;
+                }
+                if (partnerLegendEl) {
+                    partnerLegendEl.textContent = `Parada de ${partner.name.split(' ')[0]}`;
+                }
+                requestBtn?.classList.remove('hidden');
+                if (closeFooterBtn) {
+                    closeFooterBtn.className = 'btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green font-bold text-[10px] uppercase py-2.5 rounded-md';
+                    closeFooterBtn.textContent = 'CERRAR';
+                }
             }
             if (statsEl) {
                 statsEl.textContent = '🛣️ TRAZANDO...';

@@ -310,6 +310,22 @@ async function bootstrap() {
         onStartSearch: runRadarSearch
     });
 
+    function resolveCoordsByName(placeName, fallbackCoords) {
+        if (!placeName || typeof placeName !== 'string') return fallbackCoords;
+        const clean = placeName.trim().toUpperCase();
+        for (const item of Object.values(PLACES_AQP.origins)) {
+            if (clean.includes(item.name.toUpperCase()) || item.name.toUpperCase().includes(clean)) {
+                return item.coords;
+            }
+        }
+        for (const item of Object.values(PLACES_AQP.destinations)) {
+            if (clean.includes(item.name.toUpperCase()) || item.name.toUpperCase().includes(clean)) {
+                return item.coords;
+            }
+        }
+        return fallbackCoords;
+    }
+
     const incomingRequestModal = setupIncomingRequestModal({
         async onAccept() {
             clearIncomingTimer();
@@ -332,6 +348,30 @@ async function bootstrap() {
                 await matchService.rejectIncomingRequest(req.requestId);
                 showToast('SOLICITUD RECHAZADA');
             }
+        },
+        onViewRoute(details) {
+            const state = appStore.getState();
+            const originData = state.originPlace || PLACES_AQP.origins[state.originKey] || PLACES_AQP.origins.utp;
+            const destData = state.destPlace || PLACES_AQP.destinations[state.destKey] || PLACES_AQP.destinations.cerro_colorado;
+
+            const originCoords = details.originCoords || resolveCoordsByName(details.originName, originData.coords);
+            const destCoords = details.destCoords || resolveCoordsByName(details.destName, destData.coords);
+
+            routePreviewModal.open({
+                partner: {
+                    id: details.requesterId || details.userId || 'incoming-user',
+                    name: details.requesterName || 'Compañero',
+                    matchType: 'same',
+                    distanceMeters: 50,
+                    stopDistrict: details.destName || destData.name,
+                    stopStreet: details.originName || originData.name,
+                    destCoords
+                },
+                originCoords,
+                destCoords,
+                myRouteCoords: [originCoords, destCoords],
+                mode: 'incoming'
+            });
         }
     });
 
@@ -587,6 +627,29 @@ async function bootstrap() {
                 }
             }
             enterTripScreen({ tripId: state.activeTripId });
+        },
+        onViewRoute() {
+            const state = appStore.getState();
+            const partner = state.activePartner;
+            if (!partner) return;
+
+            const originData = state.originPlace || PLACES_AQP.origins[state.originKey] || PLACES_AQP.origins.utp;
+            const destData = state.destPlace || PLACES_AQP.destinations[state.destKey] || PLACES_AQP.destinations.cerro_colorado;
+            const originCoords = partner.originCoords || state.customGpsCoords || originData.coords;
+            const destCoords = partner.destCoords || destData.coords;
+
+            routePreviewModal.open({
+                partner: {
+                    ...partner,
+                    stopDistrict: destData.name || partner.destName || 'Destino',
+                    stopStreet: originData.name || partner.originName || 'Punto de encuentro',
+                    destCoords
+                },
+                originCoords,
+                destCoords,
+                myRouteCoords: state.activeRouteCoords || [originCoords, destCoords],
+                mode: 'chat'
+            });
         }
     });
 

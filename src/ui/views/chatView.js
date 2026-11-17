@@ -1,6 +1,6 @@
 import { formatClock, getNoShowState } from '../../domain/tripRules.js';
 
-export function setupChatView({ onFastForward5m, onSendMessage, onCancelMatch, onReportNoShow, onConfirmMeetup, isCloudMode = false }) {
+export function setupChatView({ onFastForward5m, onSendMessage, onCancelMatch, onReportNoShow, onConfirmMeetup, onViewRoute, isCloudMode = false }) {
     const chatMessages = document.getElementById('chat-messages');
     const chatForm = document.getElementById('chat-form');
     const chatInput = document.getElementById('chat-input');
@@ -9,10 +9,15 @@ export function setupChatView({ onFastForward5m, onSendMessage, onCancelMatch, o
     const cancelBtn = document.getElementById('cancel-match-btn');
     const noShowBtn = document.getElementById('noshow-btn');
     const confirmMeetupBtn = document.getElementById('confirm-meetup-btn');
+    const viewRouteBtn = document.getElementById('chat-view-route-btn');
 
     if (isCloudMode && fastForwardBtn) {
         fastForwardBtn.classList.add('hidden');
     }
+
+    viewRouteBtn?.addEventListener('click', () => {
+        onViewRoute?.();
+    });
 
     quickChips.forEach((chip) => {
         chip.addEventListener('click', () => {

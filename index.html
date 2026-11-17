@@ -38,7 +38,7 @@
         rel="stylesheet">
 
     <!-- Estilos Modulares SUPClub -->
-    <link rel="stylesheet" href="./src/styles/main.css?v=27">
+    <link rel="stylesheet" href="./src/styles/main.css?v=28">
 </head>
 
 <body>
@@ -839,10 +839,15 @@
                         </div>
 
                         <div
-                            class="bg-white border-2 border-sup-green shadow-hard-sm rounded-lg p-3 text-left space-y-1">
+                            class="bg-white border-2 border-sup-green shadow-hard-sm rounded-lg p-3 text-left space-y-1.5">
                             <span class="block text-[9px] font-bold uppercase text-sup-orange">RUTA PROPUESTA:</span>
                             <p id="inc-route-summary" class="text-xs font-bold uppercase text-sup-green leading-snug">
                                 UTP → CERRO COLORADO</p>
+                            <button type="button" id="inc-view-route-btn"
+                                class="w-full mt-1.5 bg-sup-cream hover:bg-white text-sup-green border-2 border-sup-green rounded-md py-1.5 px-3 font-display text-[10px] uppercase flex items-center justify-center gap-1.5 shadow-sm transition-colors">
+                                <i class="fa-solid fa-map-location-dot text-sup-orange text-xs"></i>
+                                <span>VER RECORRIDO EN EL MAPA</span>
+                            </button>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 pt-1">
@@ -861,7 +866,7 @@
 
             <!-- MODAL 6: PREVISUALIZACIÓN DE RUTA COMPARTIDA EN MAPA -->
             <div id="route-preview-modal"
-                class="hidden absolute inset-0 z-[1200] bg-sup-green/85 backdrop-blur-[2px] flex items-center justify-center p-3.5 sm:p-4">
+                class="hidden absolute inset-0 z-[1300] bg-sup-green/85 backdrop-blur-[2px] flex items-center justify-center p-3.5 sm:p-4">
                 <div
                     class="bg-sup-cream border-[3px] border-sup-green shadow-hard-lg w-full max-w-sm rounded-xl overflow-hidden animate-pop">
                     <div class="px-4 py-2.5 bg-sup-green text-sup-cream flex items-center justify-between gap-2">
@@ -1175,9 +1180,16 @@
                         </div>
                     </div>
                     <div
-                        class="bg-sup-cream text-sup-green text-[10px] font-bold px-2.5 py-1.5 rounded-sm border border-sup-green">
-                        🤝 ACUERDO LIBRE: Elijan una esquina iluminada y decidan quién pide el <strong>Uber o
-                            InDrive</strong>.
+                        class="bg-sup-cream text-sup-green border-2 border-sup-green shadow-hard-sm rounded-lg p-2.5 space-y-2">
+                        <div class="text-[10px] font-bold text-sup-green leading-snug">
+                            🤝 <strong>ACUERDO LIBRE:</strong> Elijan una esquina iluminada y decidan quién pide el <strong>Uber o InDrive</strong>.
+                        </div>
+                        <button type="button" id="chat-view-route-btn"
+                            class="w-full bg-white hover:bg-sup-orange hover:text-white text-sup-green border-2 border-sup-green rounded-md py-1.5 px-3 font-display text-[10px] sm:text-xs uppercase flex items-center justify-center gap-2 shadow-sm transition-all group">
+                            <i class="fa-solid fa-map-location-dot text-sup-orange group-hover:text-white transition-colors"></i>
+                            <span>VER RUTA Y PUNTOS EN MAPA</span>
+                            <span class="text-[9px] bg-sup-green text-sup-cream px-1.5 py-0.5 rounded font-bold group-hover:bg-white group-hover:text-sup-green transition-colors">🗺️</span>
+                        </button>
                     </div>
                 </div>
 
@@ -1387,7 +1399,7 @@
         </div>
     </div>
 
-    <script type="module" src="./src/main.js?v=27"></script>
+    <script type="module" src="./src/main.js?v=28"></script>
 </body>
 
 </html>

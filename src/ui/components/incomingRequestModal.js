@@ -1,13 +1,22 @@
-export function setupIncomingRequestModal({ onAccept, onReject }) {
+export function setupIncomingRequestModal({ onAccept, onReject, onViewRoute }) {
     const modal = document.getElementById('incoming-request-modal');
     const acceptBtn = document.getElementById('accept-incoming-req-btn');
     const rejectBtn = document.getElementById('reject-incoming-req-btn');
+    const viewRouteBtn = document.getElementById('inc-view-route-btn');
+
+    let currentDetails = null;
 
     acceptBtn?.addEventListener('click', onAccept);
     rejectBtn?.addEventListener('click', onReject);
+    viewRouteBtn?.addEventListener('click', () => {
+        if (currentDetails && onViewRoute) {
+            onViewRoute(currentDetails);
+        }
+    });
 
     return {
         open(details) {
+            currentDetails = details;
             const avatarEl = document.getElementById('inc-partner-avatar');
             const nameEl = document.getElementById('inc-partner-name');
             const uniEl = document.getElementById('inc-partner-uni');
