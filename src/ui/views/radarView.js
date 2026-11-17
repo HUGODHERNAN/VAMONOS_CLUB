@@ -64,8 +64,8 @@ export function setupRadarView({ getState, onBackToMap, onToggleWomenFilter, onD
         const womenActive = allowedWomenOnly && state.womenOnly;
         if (womenPill) {
             womenPill.className = womenActive
-                ? 'px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase border-2 transition-all bg-sup-orange text-white border-sup-cream'
-                : 'px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase border-2 transition-all bg-sup-cream text-sup-green border-sup-cream';
+                ? 'px-3 py-1.5 rounded-md text-xs font-bold uppercase border-2 transition-all bg-sup-orange text-white border-sup-cream'
+                : 'px-3 py-1.5 rounded-md text-xs font-bold uppercase border-2 transition-all bg-sup-cream text-sup-green border-sup-cream';
             womenPill.textContent = womenActive ? '♀ SOLO MUJERES' : '♀ TODAS';
             womenPill.title = allowedWomenOnly ? 'Alternar filtro Solo Mujeres' : 'Exclusivo para pasajeras (♀)';
         }
@@ -125,12 +125,12 @@ export function setupRadarView({ getState, onBackToMap, onToggleWomenFilter, onD
                         </span>
                         <div class="flex items-center gap-2 mt-1">
                             <button type="button" data-action="change-route"
-                                class="btn-brutal-sm bg-sup-cream hover:bg-sup-creamDark text-sup-green border-2 border-sup-green text-[10px] font-bold uppercase px-3.5 py-1.5 rounded-lg transition-colors">
+                                class="btn-brutal-sm bg-sup-cream hover:bg-sup-creamDark text-sup-green border-2 border-sup-green text-xs font-bold uppercase px-4 py-2 rounded-lg transition-colors">
                                 ← Cambiar origen / destino
                             </button>
                             ${state.dismissedUserIds.length > 0 ? `
                                 <button type="button" data-action="reset-radar"
-                                    class="btn-brutal-sm bg-white hover:bg-sup-cream text-sup-orange border-2 border-sup-green text-[10px] font-bold uppercase px-3.5 py-1.5 rounded-lg transition-colors">
+                                    class="btn-brutal-sm bg-white hover:bg-sup-cream text-sup-orange border-2 border-sup-green text-xs font-bold uppercase px-4 py-2 rounded-lg transition-colors">
                                     Ver omitidos (${state.dismissedUserIds.length})
                                 </button>
                             ` : ''}
@@ -209,20 +209,20 @@ export function setupRadarView({ getState, onBackToMap, onToggleWomenFilter, onD
                                 ${escapeHtml(user.payment)}
                             </span>
                         </div>
-                        <button type="button" data-action="preview-route" data-user-id="${escapeHtml(user.id)}" class="btn-brutal-sm w-full bg-white hover:bg-sup-green hover:text-sup-cream text-sup-green text-[10px] font-bold uppercase py-1.5 rounded-[3px] flex items-center justify-center gap-1.5">
+                        <button type="button" data-action="preview-route" data-user-id="${escapeHtml(user.id)}" class="btn-brutal-sm w-full bg-white hover:bg-sup-green hover:text-sup-cream text-sup-green text-xs font-bold uppercase py-2 rounded-md flex items-center justify-center gap-1.5">
                             🗺️ VER RUTA EN MAPA
                         </button>
                     </div>
 
-                    <p class="text-[11px] font-medium text-sup-green/85 leading-snug">
+                    <p class="text-xs font-medium text-sup-green/85 leading-snug">
                         "${escapeHtml(user.bio)}"
                     </p>
 
-                    <div class="grid grid-cols-2 gap-2 pt-0.5">
-                        <button type="button" data-action="dismiss-match" data-user-id="${escapeHtml(user.id)}" class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green font-bold text-xs uppercase py-2 rounded-md">
+                    <div class="grid grid-cols-2 gap-2.5 pt-1">
+                        <button type="button" data-action="dismiss-match" data-user-id="${escapeHtml(user.id)}" class="btn-brutal-sm bg-white hover:bg-sup-creamDark text-sup-green font-bold text-xs sm:text-sm uppercase py-2.5 rounded-lg">
                             ✕ PASAR
                         </button>
-                        <button type="button" data-action="accept-match" data-user-id="${escapeHtml(user.id)}" class="btn-brutal bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs uppercase py-2 rounded-md">
+                        <button type="button" data-action="accept-match" data-user-id="${escapeHtml(user.id)}" class="btn-brutal bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-xs sm:text-sm uppercase py-2.5 rounded-lg">
                             ¡VÁMONOS! →
                         </button>
                     </div>

@@ -36,39 +36,39 @@ body {
 }
 
 .window-topbar.app-mode .checkerboard-strip {
-    height: 8px;
-    background-size: 8px 8px;
-    background-position: 0 0, 0 4px, 4px -4px, -4px 0;
-    border-bottom-width: 1.5px;
+    height: 10px;
+    background-size: 10px 10px;
+    background-position: 0 0, 0 5px, 5px -5px, -5px 0;
+    border-bottom-width: 2px;
 }
 
 .window-topbar.app-mode .topbar-inner {
-    padding: 0.45rem 0.65rem;
-    gap: 0.4rem;
+    padding: 0.65rem 0.9rem;
+    gap: 0.5rem;
 }
 
 .window-topbar.app-mode .window-dots {
     display: none;
 }
 
-@media (min-width: 390px) {
+@media (min-width: 360px) {
     .window-topbar.app-mode .window-dots {
         display: flex;
-        gap: 0.25rem;
+        gap: 0.3rem;
     }
     .window-topbar.app-mode .window-dots span {
-        width: 0.6rem;
-        height: 0.6rem;
+        width: 0.75rem;
+        height: 0.75rem;
         border-width: 1.5px;
     }
 }
 
 .window-topbar.app-mode .brand-wordmark {
-    font-size: 1.05rem;
+    font-size: 1.25rem;
 }
 
 .window-topbar.app-mode .brand-script {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
 }
 
 /* ==========================================================================

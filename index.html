@@ -38,7 +38,7 @@
         rel="stylesheet">
 
     <!-- Estilos Modulares SUPClub -->
-    <link rel="stylesheet" href="./src/styles/main.css?v=22">
+    <link rel="stylesheet" href="./src/styles/main.css?v=23">
 </head>
 
 <body>
@@ -49,7 +49,7 @@
         <!-- BARRA SUPERIOR ESTILO VENTANA (3 PUNTOS + TÍTULO VÁMONOS CLUB)         -->
         <!-- ===================================================================== -->
         <header id="global-topbar" class="window-topbar shrink-0">
-            <div class="topbar-inner px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between gap-2">
+            <div class="topbar-inner px-3.5 py-2.5 sm:px-4 sm:py-3 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2 sm:gap-3 shrink-0">
                     <div class="window-dots flex items-center gap-1 sm:gap-1.5" aria-hidden="true">
                         <span
@@ -62,28 +62,28 @@
                     <button type="button" id="topbar-brand-btn"
                         class="flex items-baseline gap-1 text-left focus:outline-none group" title="Volver al inicio">
                         <span
-                            class="brand-wordmark font-display text-lg sm:text-2xl tracking-tight text-sup-green uppercase group-hover:text-sup-orange transition-colors">Vámonos</span>
+                            class="brand-wordmark font-display text-xl sm:text-2xl tracking-tight text-sup-green uppercase group-hover:text-sup-orange transition-colors">Vámonos</span>
                         <span
-                            class="brand-script font-script text-base sm:text-xl text-sup-orange -rotate-3 transform inline-block">Club</span>
+                            class="brand-script font-script text-lg sm:text-xl text-sup-orange -rotate-3 transform inline-block">Club</span>
                     </button>
                 </div>
 
-                <div class="flex items-center gap-1.5 min-w-0">
+                <div class="flex items-center gap-2 min-w-0">
                     <button type="button" id="btn-install-pwa"
-                        class="hidden btn-brutal-sm bg-sup-yellow hover:bg-sup-orange hover:text-white text-sup-green px-2.5 py-1.5 rounded-full items-center gap-1 text-[10px] font-bold uppercase tracking-wider shrink-0">
-                        <i class="fa-solid fa-download text-[10px]"></i>
+                        class="hidden btn-brutal-sm bg-sup-yellow hover:bg-sup-orange hover:text-white text-sup-green px-3 py-1.5 rounded-full items-center gap-1.5 text-xs font-bold uppercase tracking-wider shrink-0">
+                        <i class="fa-solid fa-download text-xs"></i>
                         <span>INSTALAR APP</span>
                     </button>
 
                     <div id="active-user-controls" class="hidden items-center justify-end min-w-0">
                         <button type="button" id="topbar-profile-btn"
-                            class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-bold uppercase tracking-tight transition-colors group">
+                            class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white px-3.5 py-1.5 rounded-full flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-tight transition-colors group">
                             <span id="header-avatar-initials"
-                                class="w-5 h-5 rounded-full bg-sup-green text-sup-cream group-hover:bg-white group-hover:text-sup-green text-[9px] font-display flex items-center justify-center shrink-0">
+                                class="w-6 h-6 rounded-full bg-sup-green text-sup-cream group-hover:bg-white group-hover:text-sup-green text-[10px] sm:text-xs font-display flex items-center justify-center shrink-0">
                                 HH
                             </span>
                             <span class="tracking-wider">PERFIL</span>
-                            <i class="fa-solid fa-chevron-down text-[9px] opacity-75"></i>
+                            <i class="fa-solid fa-chevron-down text-[10px] opacity-75"></i>
                         </button>
                     </div>
                 </div>
@@ -789,43 +789,43 @@
 
             <!-- PANTALLA 1: MAPA DE AREQUIPA Y BUSCADOR DE RUTA -->
             <section id="screen-1" class="hidden flex-col h-full w-full overflow-hidden">
-                <div class="relative p-3 bg-sup-cream border-b-2 border-sup-green space-y-2 shrink-0 z-20">
-                    <div class="grid grid-cols-1 gap-1.5">
-                        <div class="flex items-center gap-1.5">
+                <div class="relative p-3 sm:p-3.5 bg-sup-cream border-b-2 border-sup-green space-y-2 shrink-0 z-20">
+                    <div class="grid grid-cols-1 gap-2">
+                        <div class="flex items-center gap-2">
                             <div
-                                class="flex-1 flex items-center gap-1.5 bg-white border-2 border-sup-green shadow-hard-sm rounded-md px-2.5 py-1.5 min-w-0">
+                                class="flex-1 flex items-center gap-2 bg-white border-2 border-sup-green shadow-hard-sm rounded-lg px-3 py-2 min-w-0">
                                 <span
-                                    class="w-2.5 h-2.5 rounded-full bg-sup-orange border border-sup-green shrink-0"></span>
+                                    class="w-3 h-3 rounded-full bg-sup-orange border-2 border-sup-green shrink-0"></span>
                                 <label for="origin-input"
-                                    class="text-[9px] font-bold uppercase text-sup-green/70 shrink-0">SALIDA:</label>
+                                    class="text-[11px] font-bold uppercase text-sup-green/75 shrink-0">SALIDA:</label>
                                 <input type="text" id="origin-input" value="UTP - AV. PARRA" autocomplete="off"
                                     placeholder="Escribe calle, UTP, Mall o elige en mapa..."
-                                    class="w-full bg-transparent text-xs font-bold uppercase text-sup-green placeholder-sup-green/45 focus:outline-none truncate">
+                                    class="w-full bg-transparent text-xs sm:text-sm font-bold uppercase text-sup-green placeholder-sup-green/45 focus:outline-none truncate">
                             </div>
                             <button type="button" id="pick-origin-map-btn" title="Elegir punto de salida en el mapa"
-                                class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white text-sup-green px-2 py-2 rounded-md text-[10px] font-bold uppercase shrink-0 flex items-center gap-1">
-                                <i class="fa-solid fa-map-pin"></i>
+                                class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white text-sup-green px-3 py-2.5 rounded-lg text-xs font-bold uppercase shrink-0 flex items-center justify-center">
+                                <i class="fa-solid fa-map-pin text-sm"></i>
                             </button>
                             <button type="button" id="gps-locate-btn" title="Centrar radio 1000m en mi GPS actual"
-                                class="btn-brutal-sm bg-sup-green hover:bg-sup-orange text-sup-cream px-2.5 py-2 rounded-md text-[10px] font-bold uppercase shrink-0 flex items-center gap-1">
-                                <i class="fa-solid fa-crosshairs"></i>
+                                class="btn-brutal-sm bg-sup-green hover:bg-sup-orange text-sup-cream px-3 py-2.5 rounded-lg text-xs font-bold uppercase shrink-0 flex items-center gap-1.5">
+                                <i class="fa-solid fa-crosshairs text-xs"></i>
                                 <span>GPS</span>
                             </button>
                         </div>
 
-                        <div class="flex items-center gap-1.5">
+                        <div class="flex items-center gap-2">
                             <div
-                                class="flex-1 flex items-center gap-1.5 bg-white border-2 border-sup-green shadow-hard-sm rounded-md px-2.5 py-1.5 min-w-0">
-                                <span class="w-2.5 h-2.5 rounded-sm bg-sup-green shrink-0"></span>
+                                class="flex-1 flex items-center gap-2 bg-white border-2 border-sup-green shadow-hard-sm rounded-lg px-3 py-2 min-w-0">
+                                <span class="w-3 h-3 rounded-sm bg-sup-green shrink-0"></span>
                                 <label for="dest-input"
-                                    class="text-[9px] font-bold uppercase text-sup-green/70 shrink-0">DESTINO:</label>
+                                    class="text-[11px] font-bold uppercase text-sup-green/75 shrink-0">DESTINO:</label>
                                 <input type="text" id="dest-input" value="CERRO COLORADO (AV. AVIACIÓN)"
                                     autocomplete="off" placeholder="Escribe distrito, avenida o toca el mapa..."
-                                    class="w-full bg-transparent text-xs font-bold uppercase text-sup-green placeholder-sup-green/45 focus:outline-none truncate">
+                                    class="w-full bg-transparent text-xs sm:text-sm font-bold uppercase text-sup-green placeholder-sup-green/45 focus:outline-none truncate">
                             </div>
                             <button type="button" id="pick-dest-map-btn" title="Elegir destino en el mapa"
-                                class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white text-sup-green px-2.5 py-2 rounded-md text-[10px] font-bold uppercase shrink-0 flex items-center gap-1">
-                                <i class="fa-solid fa-location-dot"></i>
+                                class="btn-brutal-sm bg-white hover:bg-sup-orange hover:text-white text-sup-green px-3 py-2.5 rounded-lg text-xs font-bold uppercase shrink-0 flex items-center gap-1.5">
+                                <i class="fa-solid fa-location-dot text-xs"></i>
                                 <span>MAPA</span>
                             </button>
                         </div>
@@ -833,75 +833,75 @@
 
                     <!-- Lista desplegable flotante de sugerencias (Nodos + OpenStreetMap Arequipa) -->
                     <div id="place-suggestions-box"
-                        class="hidden absolute left-3 right-3 top-[calc(100%-4px)] z-[1100] bg-white border-2 border-sup-green shadow-hard rounded-md max-h-52 overflow-y-auto no-scrollbar divide-y divide-sup-green/15">
+                        class="hidden absolute left-3 right-3 top-[calc(100%-4px)] z-[1100] bg-white border-2 border-sup-green shadow-hard rounded-lg max-h-52 overflow-y-auto no-scrollbar divide-y divide-sup-green/15">
                     </div>
                 </div>
 
-                <div class="relative flex-1 w-full min-h-[210px] retro-map-tiles overflow-hidden">
+                <div class="relative flex-1 w-full min-h-[200px] retro-map-tiles overflow-hidden">
                     <div id="map-screen-1" class="w-full h-full"></div>
                     <div
-                        class="absolute top-2.5 left-2.5 z-[1001] bg-sup-green text-sup-cream border-2 border-sup-orange shadow-hard-sm px-2.5 py-1 rounded-sm flex items-center gap-1.5 text-[10px] font-bold uppercase">
-                        <span class="w-2 h-2 rounded-full bg-sup-orange animate-ping"></span>
+                        class="absolute top-3 left-3 z-[1001] bg-sup-green text-sup-cream border-2 border-sup-orange shadow-hard-sm px-3 py-1.5 rounded-md flex items-center gap-2 text-xs font-bold uppercase">
+                        <span class="w-2.5 h-2.5 rounded-full bg-sup-orange animate-ping"></span>
                         <span>RADIO PRIVADO 1000M ACTIVO</span>
                     </div>
                     <div id="map-pick-banner"
-                        class="hidden absolute top-11 left-2.5 right-2.5 z-[1001] bg-sup-orange text-white border-2 border-sup-green shadow-hard-sm px-2.5 py-1.5 rounded-sm flex items-center justify-between gap-2 text-[10px] font-bold uppercase">
+                        class="hidden absolute top-12 left-3 right-3 z-[1001] bg-sup-orange text-white border-2 border-sup-green shadow-hard-sm px-3 py-2 rounded-md flex items-center justify-between gap-2 text-xs font-bold uppercase">
                         <span id="map-pick-text">👆 TOCA EL MAPA PARA ELEGIR SALIDA</span>
                         <button type="button" id="cancel-map-pick-btn"
-                            class="bg-sup-green text-sup-cream px-1.5 py-0.5 rounded-[2px] text-[9px] font-bold">✕</button>
+                            class="bg-sup-green text-sup-cream px-2 py-1 rounded text-xs font-bold">✕</button>
                     </div>
                     <div id="route-stats-badge"
-                        class="hidden absolute bottom-2.5 left-2.5 z-[1001] bg-sup-cream text-sup-green border-2 border-sup-green shadow-hard-sm px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase">
+                        class="hidden absolute bottom-3 left-3 z-[1001] bg-sup-cream text-sup-green border-2 border-sup-green shadow-hard-sm px-3 py-1.5 rounded-md text-xs font-bold uppercase">
                         🛣️ CALCULANDO RUTA...
                     </div>
                 </div>
 
-                <div class="p-3 bg-sup-cream border-t-2 border-sup-green space-y-2.5 shrink-0">
-                    <div class="grid grid-cols-2 gap-2">
+                <div class="p-3.5 sm:p-4 bg-sup-cream border-t-2 border-sup-green space-y-3 shrink-0">
+                    <div class="grid grid-cols-2 gap-2.5">
                         <div>
                             <span
-                                class="inline-block bg-sup-orange text-white border border-sup-green px-1.5 py-0.5 rounded-[2px] text-[9px] font-display uppercase tracking-wider mb-1 shadow-hard-sm">¿CUÁNDO
+                                class="inline-block bg-sup-orange text-white border border-sup-green px-2 py-0.5 rounded-[3px] text-[10px] sm:text-xs font-display uppercase tracking-wider mb-1.5 shadow-hard-sm">¿CUÁNDO
                                 SALES?</span>
-                            <div class="grid grid-cols-3 gap-1">
+                            <div class="grid grid-cols-3 gap-1.5">
                                 <button type="button" data-time="AHORA"
-                                    class="time-btn btn-brutal-sm bg-sup-orange text-white text-[10px] font-bold py-1.5 rounded-sm uppercase">AHORA</button>
+                                    class="time-btn btn-brutal-sm bg-sup-orange text-white text-xs sm:text-sm font-bold py-2.5 rounded-md uppercase">AHORA</button>
                                 <button type="button" data-time="10 MIN"
-                                    class="time-btn btn-brutal-sm bg-white text-sup-green hover:bg-sup-orange/15 text-[10px] font-bold py-1.5 rounded-sm uppercase">10M</button>
+                                    class="time-btn btn-brutal-sm bg-white text-sup-green hover:bg-sup-orange/15 text-xs sm:text-sm font-bold py-2.5 rounded-md uppercase">10M</button>
                                 <button type="button" data-time="20 MIN"
-                                    class="time-btn btn-brutal-sm bg-white text-sup-green hover:bg-sup-orange/15 text-[10px] font-bold py-1.5 rounded-sm uppercase">20M</button>
+                                    class="time-btn btn-brutal-sm bg-white text-sup-green hover:bg-sup-orange/15 text-xs sm:text-sm font-bold py-2.5 rounded-md uppercase">20M</button>
                             </div>
                         </div>
                         <div>
                             <span
-                                class="inline-block bg-sup-green text-sup-cream border border-sup-green px-1.5 py-0.5 rounded-[2px] text-[9px] font-display uppercase tracking-wider mb-1 shadow-hard-sm">DIVIDIR
+                                class="inline-block bg-sup-green text-sup-cream border border-sup-green px-2 py-0.5 rounded-[3px] text-[10px] sm:text-xs font-display uppercase tracking-wider mb-1.5 shadow-hard-sm">DIVIDIR
                                 CON:</span>
-                            <div class="grid grid-cols-2 gap-1">
+                            <div class="grid grid-cols-2 gap-1.5">
                                 <button type="button" data-payment="YAPE / PLIN"
-                                    class="pay-btn btn-brutal-sm bg-sup-plum text-white text-[10px] font-bold py-1.5 rounded-sm uppercase">YAPE/PLIN</button>
+                                    class="pay-btn btn-brutal-sm bg-sup-plum text-white text-xs sm:text-sm font-bold py-2.5 rounded-md uppercase">YAPE/PLIN</button>
                                 <button type="button" data-payment="EFECTIVO"
-                                    class="pay-btn btn-brutal-sm bg-white text-sup-green text-[10px] font-bold py-1.5 rounded-sm uppercase">EFECTIVO</button>
+                                    class="pay-btn btn-brutal-sm bg-white text-sup-green text-xs sm:text-sm font-bold py-2.5 rounded-md uppercase">EFECTIVO</button>
                             </div>
                         </div>
                     </div>
 
                     <label
-                        class="flex items-center justify-between bg-white border-2 border-sup-green rounded-md px-3 py-2 cursor-pointer select-none">
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm">♀</span>
+                        class="flex items-center justify-between bg-white border-2 border-sup-green rounded-lg px-3.5 py-2.5 cursor-pointer select-none shadow-hard-sm">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-base text-sup-orange font-bold">♀</span>
                             <div>
-                                <span class="block text-[11px] font-bold uppercase text-sup-green leading-none">SOLO
+                                <span class="block text-xs sm:text-sm font-bold uppercase text-sup-green leading-tight">SOLO
                                     MUJERES VERIFICADAS</span>
-                                <span id="women-only-subtitle" class="text-[9px] font-medium text-sup-green/70">Filtra
+                                <span id="women-only-subtitle" class="text-[10px] sm:text-xs font-medium text-sup-green/70">Filtra
                                     coincidencias exclusivamente femeninas</span>
                             </div>
                         </div>
                         <input type="checkbox" id="women-only-toggle"
-                            class="w-4 h-4 accent-[#FA4A19] border-2 border-sup-green rounded-[2px]">
+                            class="w-5 h-5 accent-[#FA4A19] border-2 border-sup-green rounded-[3px] cursor-pointer">
                     </label>
 
                     <button type="button" id="start-radar-btn"
-                        class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-sm uppercase tracking-wider py-3 rounded-md flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-satellite-dish"></i>
+                        class="btn-brutal w-full bg-sup-orange hover:bg-sup-orangeHover text-white font-display text-base sm:text-lg uppercase tracking-wider py-3.5 sm:py-4 rounded-lg flex items-center justify-center gap-2.5 shadow-hard">
+                        <i class="fa-solid fa-satellite-dish text-lg"></i>
                         <span>BUSCAR COMPAÑEROS EN RUTA</span>
                     </button>
                 </div>
@@ -909,35 +909,36 @@
 
             <!-- PANTALLA 2: RADAR DE COINCIDENCIAS -->
             <section id="screen-2" class="hidden flex-col h-full w-full overflow-hidden">
-                <div class="bg-sup-green text-sup-cream p-3 border-b-2 border-sup-green shrink-0 space-y-2">
+                <div class="bg-sup-green text-sup-cream p-3.5 border-b-2 border-sup-green shrink-0 space-y-2.5">
                     <div class="flex items-center justify-between gap-2">
                         <button type="button" id="radar-back-map-btn"
-                            class="btn-brutal-sm bg-sup-cream text-sup-green text-[10px] font-bold uppercase px-2.5 py-1 rounded-sm">
+                            class="btn-brutal-sm bg-sup-cream text-sup-green text-xs font-bold uppercase px-3 py-1.5 rounded-md">
                             ← MAPA
                         </button>
                         <span id="radar-user-badge"
-                            class="bg-sup-orange text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm border border-sup-cream">
+                            class="bg-sup-orange text-white text-xs font-bold uppercase px-2.5 py-1 rounded-md border border-sup-cream">
                             🎓 UTP
                         </span>
                     </div>
                     <div>
-                        <h2 class="font-display text-lg uppercase text-sup-orange leading-tight">RADAR EN VIVO</h2>
-                        <p id="radar-route-label" class="text-[11px] font-bold uppercase text-sup-cream truncate">UTP →
+                        <h2 class="font-display text-xl uppercase text-sup-orange leading-tight">RADAR EN VIVO</h2>
+                        <p id="radar-route-label" class="text-xs sm:text-sm font-bold uppercase text-sup-cream truncate">UTP →
                             CERRO COLORADO</p>
                     </div>
                     <div class="flex items-center justify-between gap-2 pt-0.5">
                         <span id="radar-time-badge"
-                            class="text-[10px] font-bold uppercase bg-sup-greenLight border border-sup-cream/30 px-2 py-1 rounded-sm">
+                            class="text-xs font-bold uppercase bg-sup-greenLight border border-sup-cream/30 px-2.5 py-1 rounded-md">
                             SALIDA: AHORA
                         </span>
                         <button type="button" id="radar-women-pill"
-                            class="px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase border-2 transition-all bg-sup-cream text-sup-green border-sup-cream">
+                            class="px-3 py-1.5 rounded-md text-xs font-bold uppercase border-2 transition-all bg-sup-cream text-sup-green border-sup-cream">
                             ♀ TODAS
                         </button>
                     </div>
                 </div>
 
-                <div id="matches-container" class="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar"></div>
+                <div id="matches-container" class="flex-1 overflow-y-auto p-3.5 space-y-3.5 no-scrollbar"></div>
+            </section>
             </section>
 
             <!-- PANTALLA 3: SALA DE COORDINACIÓN (CHAT EFÍMERO) -->
@@ -1185,7 +1186,7 @@
         </div>
     </div>
 
-    <script type="module" src="./src/main.js?v=22"></script>
+    <script type="module" src="./src/main.js?v=23"></script>
 </body>
 
 </html>
